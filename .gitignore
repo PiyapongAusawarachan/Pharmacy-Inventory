@@ -1,0 +1,11 @@
+node_modules/
+.env
+npm-debug.log*
+.DS_Store
+
+# Uploaded images live on the local server, not in git
+uploads/*
+!uploads/.gitkeep
+
+# Raw TMT downloads (licence unconfirmed; do not commit the full dataset)
+data/raw/

@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+
+<h1>System status</h1>
+
+<section class="card">
+  <h2>PostgreSQL <span class="badge <%= status.postgres.ok ? 'ok' : 'fail' %>"><%= status.postgres.ok ? 'connected' : 'error' %></span></h2>
+  <% if (status.postgres.ok) { %>
+    <p>Tables: <%= status.postgres.tables.length ? status.postgres.tables.join(', ') : '(none — run npm run db:reset)' %></p>
+  <% } else { %>
+    <p class="error"><%= status.postgres.error %></p>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>MongoDB <span class="badge <%= status.mongo.ok ? 'ok' : 'fail' %>"><%= status.mongo.ok ? 'connected' : 'error' %></span></h2>
+  <% if (status.mongo.ok) { %>
+    <p>Collections: <%= status.mongo.collections.length ? status.mongo.collections.join(', ') : '(none — run npm run db:reset)' %></p>
+  <% } else { %>
+    <p class="error"><%= status.mongo.error %></p>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>

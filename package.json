@@ -1,0 +1,25 @@
+{
+  "name": "pharmacy-inventory",
+  "version": "0.1.0",
+  "description": "Pharmacy inventory & dispensing web app with FEFO lot tracking (PostgreSQL + MongoDB)",
+  "main": "src/server.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:reset": "node scripts/db-reset.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "mongodb": "^6.10.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
