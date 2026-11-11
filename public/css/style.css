@@ -1,11 +1,29 @@
+/* Colour scheme 60-30-10: white 60%, mint green 30%, black 10% */
+:root {
+  --white: #ffffff;        /* 60% - page and card background */
+  --mint: #3eb489;         /* 30% - main mint (top bar, accents) */
+  --mint-light: #e3f6ee;   /* 30% - mint tint for card headers / surfaces */
+  --mint-border: #b5e6d1;
+  --black: #111111;        /* 10% - text, headings, footer */
+  --error: #b91c1c;        /* only for error messages */
+}
+
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #1f2933; background: #f5f7fa; }
-.topbar { background: #0f766e; padding: 12px 24px; }
-.brand { color: #fff; font-weight: 600; text-decoration: none; font-size: 18px; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--black); background: var(--white); }
+
+.topbar { background: var(--mint); padding: 14px 24px; border-bottom: 3px solid var(--black); }
+.brand { color: var(--black); font-weight: 700; text-decoration: none; font-size: 18px; }
+
 .container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
-.card { background: #fff; border: 1px solid #e4e7eb; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
-.card h2 { margin-top: 0; font-size: 18px; }
+h1 { color: var(--black); }
+
+.card { background: var(--white); border: 1px solid var(--mint-border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+.card h2 { margin: 0; font-size: 18px; padding: 12px 20px; background: var(--mint-light); border-bottom: 1px solid var(--mint-border); }
+.card p { padding: 0 20px; }
+
 .badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; vertical-align: middle; margin-left: 8px; }
-.badge.ok { background: #d1fae5; color: #065f46; }
-.badge.fail { background: #fee2e2; color: #991b1b; }
-.error { color: #b91c1c; }
+.badge.ok { background: var(--mint); color: var(--black); }
+.badge.fail { background: var(--black); color: var(--white); }
+.error { color: var(--error); }
+
+a { color: var(--black); text-decoration-color: var(--mint); text-decoration-thickness: 2px; }
