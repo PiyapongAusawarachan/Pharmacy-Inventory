@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+
+<h1><%= mode === 'new' ? 'Add supplier' : 'Edit supplier' %></h1>
+<%- include('../partials/errors') %>
+
+<form class="form card-body card" method="post" action="<%= mode === 'new' ? '/suppliers' : '/suppliers/' + s.supplier_id %>">
+  <label>Name
+    <input type="text" name="name" value="<%= s.name %>" maxlength="150" required>
+  </label>
+  <label>Phone
+    <input type="text" name="phone" value="<%= s.phone || '' %>" maxlength="30">
+  </label>
+  <label>Address
+    <textarea name="address" rows="3"><%= s.address || '' %></textarea>
+  </label>
+  <% if (mode === 'edit') { %>
+    <label class="check"><input type="checkbox" name="is_active" <%= s.is_active ? 'checked' : '' %>> Supplier is active</label>
+  <% } %>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="/suppliers">Cancel</a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

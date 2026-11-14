@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<div class="card login-card">
+  <h2>Sign in</h2>
+  <div class="card-body">
+    <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+    <form method="post" action="/login">
+      <label>Username
+        <input type="text" name="username" value="<%= username %>" autofocus required>
+      </label>
+      <label>Password
+        <input type="password" name="password" required>
+      </label>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

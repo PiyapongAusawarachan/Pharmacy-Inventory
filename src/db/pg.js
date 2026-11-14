@@ -1,5 +1,9 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 const config = require('../config');
+
+// Return DATE columns as plain 'YYYY-MM-DD' strings. By default pg converts them
+// to JS Date objects at local midnight, which can shift the day by timezone.
+types.setTypeParser(1082, (value) => value);
 
 const pool = new Pool(config.pg);
 

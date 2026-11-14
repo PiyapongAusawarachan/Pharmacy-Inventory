@@ -1,6 +1,17 @@
 <%- include('partials/header') %>
 
-<h1>System status</h1>
+<h1>Dashboard</h1>
+
+<% if (summary) { %>
+<div class="stats">
+  <a class="stat" href="/medicines"><span class="stat-num"><%= summary.medicines %></span><span class="stat-label">Active medicines</span></a>
+  <a class="stat" href="/lots?status=ACTIVE"><span class="stat-num"><%= summary.sellable_lots %></span><span class="stat-label">Sellable lots</span></a>
+  <a class="stat" href="/lots?view=near"><span class="stat-num"><%= summary.near_expiry %></span><span class="stat-label">Expiring within <%= NEAR_EXPIRY_DAYS %> days</span></a>
+  <a class="stat" href="/lots?view=expired"><span class="stat-num"><%= summary.expired_on_shelf %></span><span class="stat-label">Expired, still in stock</span></a>
+</div>
+<% } %>
+
+<h2>System status</h2>
 
 <section class="card">
   <h2>PostgreSQL <span class="badge <%= status.postgres.ok ? 'ok' : 'fail' %>"><%= status.postgres.ok ? 'connected' : 'error' %></span></h2>

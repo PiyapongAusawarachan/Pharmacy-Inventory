@@ -1,0 +1,89 @@
+<%- include('../partials/header') %>
+
+<h1><%= mode === 'new' ? 'Add medicine' : 'Edit medicine' %></h1>
+<%- include('../partials/errors') %>
+
+<form class="form card-body card" method="post" enctype="multipart/form-data"
+      action="<%= mode === 'new' ? '/medicines' : '/medicines/' + m.medicine_id %>">
+
+  <label>Generic name
+    <input type="text" name="generic_name" value="<%= m.generic_name %>" maxlength="200" required>
+    <small>Lowercase. For combination products join ingredients with +, e.g. amoxicillin+clavulanic acid.</small>
+  </label>
+
+  <label>Brand name (optional)
+    <input type="text" name="brand_name" value="<%= m.brand_name || '' %>" maxlength="150">
+  </label>
+
+  <div class="form-row">
+    <label>Strength
+      <input type="text" name="strength" value="<%= m.strength %>" maxlength="50" placeholder="e.g. 500 mg" required>
+    </label>
+    <label>Dosage form
+      <input type="text" name="dosage_form" value="<%= m.dosage_form %>" maxlength="50" placeholder="e.g. tablet, syrup" required>
+    </label>
+  </div>
+
+  <label>Drug class
+    <select name="drug_class" required>
+      <option value="">— pick one —</option>
+      <% Object.keys(DRUG_CLASSES).forEach(function (k) { %>
+        <option value="<%= k %>" <%= m.drug_class === k ? 'selected' : '' %>><%= DRUG_CLASSES[k].label %></option>
+      <% }) %>
+    </select>
+    <small>Used for allergy checks, e.g. a penicillin allergy matches every PENICILLINS medicine.</small>
+  </label>
+
+  <label>Legal category
+    <select name="legal_category" required>
+      <% LEGAL_CATEGORIES.forEach(function (c) { %>
+        <option value="<%= c %>" <%= m.legal_category === c ? 'selected' : '' %>><%= LEGAL_LABELS[c] %></option>
+      <% }) %>
+    </select>
+  </label>
+
+  <label class="check"><input type="checkbox" name="requires_prescription" <%= m.requires_prescription ? 'checked' : '' %>> Requires a prescription (always on for specially controlled drugs)</label>
+  <label class="check"><input type="checkbox" name="requires_khy11" <%= m.requires_khy11 ? 'checked' : '' %>> Sale must be recorded on form ขย.11</label>
+
+  <div class="form-row">
+    <label>Base unit
+      <input type="text" name="base_unit" value="<%= m.base_unit %>" maxlength="20" placeholder="e.g. tablet, bottle" required>
+      <small>The smallest unit you sell. All stock and prices use it.</small>
+    </label>
+    <label>Units per pack
+      <input type="number" name="units_per_pack" value="<%= m.units_per_pack %>" min="1" step="1" required>
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label>Sell price per unit
+      <input type="number" name="sell_price" value="<%= m.sell_price %>" min="0" step="0.01" required>
+    </label>
+    <label>Reorder level (units)
+      <input type="number" name="reorder_level" value="<%= m.reorder_level %>" min="0" step="1">
+    </label>
+  </div>
+
+  <% if (mode === 'edit') { %>
+    <label class="check"><input type="checkbox" name="is_active" <%= m.is_active ? 'checked' : '' %>> Medicine is active</label>
+  <% } %>
+
+  <% if (m.image_path) { %>
+    <div class="current-image">
+      <img class="thumb thumb-large" src="/uploads/<%= m.image_path %>" alt="">
+      <label class="check"><input type="checkbox" name="remove_image"> Remove this image</label>
+    </div>
+  <% } %>
+
+  <%# The file field must stay last: if the upload is rejected, the fields above are still read. %>
+  <label>Image (JPG, PNG or WebP, up to 2 MB)
+    <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
+  </label>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="/medicines">Cancel</a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

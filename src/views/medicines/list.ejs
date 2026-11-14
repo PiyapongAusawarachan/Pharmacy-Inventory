@@ -1,0 +1,59 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <h1>Medicines</h1>
+  <% if (canWrite) { %><a class="btn btn-primary" href="/medicines/new">Add medicine</a><% } %>
+</div>
+
+<form class="filters" method="get" action="/medicines">
+  <input type="text" name="q" value="<%= q %>" placeholder="Search generic or brand name">
+  <button class="btn btn-small" type="submit">Search</button>
+  <% if (q) { %><a class="btn btn-small" href="/medicines">Clear</a><% } %>
+</form>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th></th><th>Medicine</th><th>Strength / form</th><th>Drug class</th><th>Legal category</th>
+      <th class="num">Sellable stock</th><th class="num">Price / unit</th><% if (canWrite) { %><th class="actions-col">Actions</th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="8" class="empty">No medicines found.</td></tr><% } %>
+    <% rows.forEach(function (m) { %>
+      <tr class="<%= m.is_active ? '' : 'row-inactive' %>">
+        <td class="thumb-col">
+          <% if (m.image_path) { %><img class="thumb" src="/uploads/<%= m.image_path %>" alt=""><% } else { %><span class="thumb thumb-empty"></span><% } %>
+        </td>
+        <td>
+          <strong><%= m.generic_name %></strong>
+          <% if (m.brand_name) { %><br><span class="muted"><%= m.brand_name %></span><% } %>
+          <% if (!m.is_active) { %><br><span class="muted">(inactive)</span><% } %>
+        </td>
+        <td><%= m.strength %><br><span class="muted"><%= m.dosage_form %></span></td>
+        <td><%= DRUG_CLASSES[m.drug_class] ? DRUG_CLASSES[m.drug_class].label : m.drug_class %></td>
+        <td>
+          <span class="tag tag-<%= m.legal_category.toLowerCase() %>"><%= LEGAL_SHORT[m.legal_category] %></span>
+          <% if (m.requires_prescription) { %><span class="tag">Rx</span><% } %>
+          <% if (m.requires_khy11) { %><span class="tag">ขย.11</span><% } %>
+        </td>
+        <td class="num">
+          <%= m.sellable_qty %> <%= m.base_unit %>
+          <% if (m.is_active && m.sellable_qty <= m.reorder_level) { %><br><span class="tag tag-warn" title="Reorder level: <%= m.reorder_level %>">Low stock</span><% } %>
+        </td>
+        <td class="num"><%= Number(m.sell_price).toFixed(2) %></td>
+        <% if (canWrite) { %>
+          <td class="actions">
+            <a class="btn btn-small" href="/lots/new?medicine=<%= m.medicine_id %>">Receive</a>
+            <a class="btn btn-small" href="/medicines/<%= m.medicine_id %>/edit">Edit</a>
+            <form method="post" action="/medicines/<%= m.medicine_id %>/delete" onsubmit="return confirm('Delete this medicine? If it has lots or sales history it is deactivated instead.');">
+              <button class="btn btn-small btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>
