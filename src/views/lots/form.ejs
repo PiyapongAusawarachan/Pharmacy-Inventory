@@ -1,0 +1,86 @@
+<%- include('../partials/header') %>
+
+<h1><%= mode === 'new' ? 'Receive stock lot' : 'Edit stock lot' %></h1>
+<%- include('../partials/errors') %>
+
+<form class="form card-body card" method="post" action="<%= mode === 'new' ? '/lots' : '/lots/' + lot.lot_id %>">
+
+  <% if (mode === 'new') { %>
+    <label>Medicine
+      <select name="medicine_id" required>
+        <option value="">— pick one —</option>
+        <% medicines.forEach(function (m) { %>
+          <option value="<%= m.medicine_id %>" <%= Number(lot.medicine_id) === m.medicine_id ? 'selected' : '' %>>
+            <%= m.generic_name %> <%= m.strength %> <%= m.dosage_form %><%= m.brand_name ? ' (' + m.brand_name + ')' : '' %> — <%= m.units_per_pack %> <%= m.base_unit %>/pack
+          </option>
+        <% }) %>
+      </select>
+    </label>
+  <% } else { %>
+    <label>Medicine
+      <input type="text" disabled value="<%= lot.generic_name %> <%= lot.strength %> <%= lot.dosage_form %>">
+      <small>The medicine of a lot cannot be changed after receiving.</small>
+    </label>
+  <% } %>
+
+  <label>Supplier
+    <select name="supplier_id" required>
+      <option value="">— pick one —</option>
+      <% suppliers.forEach(function (s) { %>
+        <option value="<%= s.supplier_id %>" <%= Number(lot.supplier_id) === s.supplier_id ? 'selected' : '' %>><%= s.name %></option>
+      <% }) %>
+    </select>
+  </label>
+
+  <div class="form-row">
+    <label>Lot number
+      <input type="text" name="lot_number" value="<%= lot.lot_number %>" maxlength="50" required>
+    </label>
+    <label>Unit cost (per base unit)
+      <input type="number" name="unit_cost" value="<%= lot.unit_cost %>" min="0" step="0.01">
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label>Manufacture date (optional)
+      <input type="date" name="mfg_date" value="<%= lot.mfg_date || '' %>">
+    </label>
+    <label>Expiry date
+      <input type="date" name="expiry_date" value="<%= lot.expiry_date %>" required>
+    </label>
+  </div>
+
+  <% if (mode === 'new') { %>
+    <div class="form-row">
+      <label>Packs received
+        <input type="number" name="packs" value="<%= lot.packs %>" min="1" step="1" required>
+        <small>Stored in base units: packs × units per pack.</small>
+      </label>
+      <label>Received date
+        <input type="date" name="received_date" value="<%= lot.received_date || '' %>">
+      </label>
+    </div>
+  <% } else { %>
+    <div class="form-row">
+      <label>Quantity on hand (<%= lot.base_unit %>)
+        <input type="number" name="qty_on_hand" value="<%= lot.qty_on_hand %>" min="0" step="1" required>
+        <small>Received: <%= lot.qty_received %>. Change this only to correct the count (stock adjustment).</small>
+      </label>
+      <label>Status
+        <select name="status" required>
+          <% LOT_STATUSES.forEach(function (s) { %>
+            <option value="<%= s %>" <%= lot.status === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+        <small>Only ACTIVE lots are sold.</small>
+      </label>
+    </div>
+  <% } %>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="/lots">Cancel</a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

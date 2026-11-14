@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <h1>Staff</h1>
+  <a class="btn btn-primary" href="/staff/new">Add staff</a>
+</div>
+
+<table class="table">
+  <thead>
+    <tr><th>Username</th><th>Full name</th><th>Role</th><th>Status</th><th class="actions-col">Actions</th></tr>
+  </thead>
+  <tbody>
+    <% rows.forEach(function (s) { %>
+      <tr class="<%= s.is_active ? '' : 'row-inactive' %>">
+        <td><%= s.username %></td>
+        <td><%= s.full_name %></td>
+        <td><span class="tag"><%= s.role %></span></td>
+        <td><%= s.is_active ? 'Active' : 'Inactive' %></td>
+        <td class="actions">
+          <a class="btn btn-small" href="/staff/<%= s.staff_id %>/edit">Edit</a>
+          <% if (s.staff_id !== user.staff_id) { %>
+            <form method="post" action="/staff/<%= s.staff_id %>/delete" onsubmit="return confirm('Delete <%= s.username %>? If they have sales history the account is deactivated instead.');">
+              <button class="btn btn-small btn-danger" type="submit">Delete</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<%- include('../partials/footer') %>

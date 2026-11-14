@@ -3,11 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title %></title>
+  <title><%= title %> · Pharmacy Inventory</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/">Pharmacy Inventory</a>
+    <% if (user) { %>
+      <nav class="nav">
+        <a href="/medicines" class="<%= currentPath.indexOf('/medicines') === 0 ? 'active' : '' %>">Medicines</a>
+        <a href="/lots" class="<%= currentPath.indexOf('/lots') === 0 ? 'active' : '' %>">Stock lots</a>
+        <a href="/suppliers" class="<%= currentPath.indexOf('/suppliers') === 0 ? 'active' : '' %>">Suppliers</a>
+        <% if (user.role === 'ADMIN') { %>
+          <a href="/staff" class="<%= currentPath.indexOf('/staff') === 0 ? 'active' : '' %>">Staff</a>
+        <% } %>
+      </nav>
+      <form class="userbox" method="post" action="/logout">
+        <span><%= user.full_name %> · <%= user.role %></span>
+        <button class="btn btn-small" type="submit">Sign out</button>
+      </form>
+    <% } %>
   </header>
   <main class="container">
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.msg %></div>
+    <% } %>

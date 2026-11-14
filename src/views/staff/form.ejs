@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+
+<h1><%= mode === 'new' ? 'Add staff' : 'Edit staff' %></h1>
+<%- include('../partials/errors') %>
+
+<form class="form card-body card" method="post" action="<%= mode === 'new' ? '/staff' : '/staff/' + s.staff_id %>">
+  <label>Username
+    <% if (mode === 'new') { %>
+      <input type="text" name="username" value="<%= s.username %>" maxlength="50" required>
+    <% } else { %>
+      <input type="text" value="<%= s.username %>" disabled>
+    <% } %>
+  </label>
+
+  <label>Full name
+    <input type="text" name="full_name" value="<%= s.full_name %>" maxlength="100" required>
+  </label>
+
+  <label>Role
+    <select name="role" required>
+      <% STAFF_ROLES.forEach(function (r) { %>
+        <option value="<%= r %>" <%= s.role === r ? 'selected' : '' %>><%= r %></option>
+      <% }) %>
+    </select>
+  </label>
+
+  <label>Password <%= mode === 'edit' ? '(leave empty to keep the current one)' : '' %>
+    <input type="password" name="password" autocomplete="new-password" <%= mode === 'new' ? 'required' : '' %>>
+  </label>
+
+  <% if (mode === 'edit') { %>
+    <label class="check"><input type="checkbox" name="is_active" <%= s.is_active ? 'checked' : '' %>> Account is active</label>
+  <% } %>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="/staff">Cancel</a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

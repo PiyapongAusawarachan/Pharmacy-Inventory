@@ -13,6 +13,7 @@ module.exports = {
     url: process.env.MONGO_URL || 'mongodb://localhost:27017',
     db: process.env.MONGO_DB || 'pharmacy',
   },
+  sessionSecret: process.env.SESSION_SECRET || 'dev-only-secret-change-me',
   uploadDir: process.env.UPLOAD_DIR || 'uploads',
   nearExpiryDays: Number(process.env.NEAR_EXPIRY_DAYS) || 180,
 };
