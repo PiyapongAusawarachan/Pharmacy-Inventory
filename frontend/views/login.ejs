@@ -1,0 +1,20 @@
+<%- include('partials/header') %>
+
+<div class="card">
+  <div class="card-head"><h2><%= t('Sign in') %></h2></div>
+  <div class="card-body">
+    <% if (error) { %><div class="flash flash-error" role="alert"><%- icon('alert') %><div><%= t(error) %></div></div><% } %>
+    <form method="post" action="/login">
+      <label><%= t('Username') %>
+        <input type="text" name="username" value="<%= username %>" autofocus required>
+      </label>
+      <label><%= t('Password') %>
+        <input type="password" name="password" required>
+      </label>
+      <button class="btn btn-primary btn-big" type="submit"><%= t('Sign in') %></button>
+    </form>
+  </div>
+</div>
+<p class="muted small"><%= t('Staff only. Ask the shop admin for an account.') %></p>
+
+<%- include('partials/footer') %>

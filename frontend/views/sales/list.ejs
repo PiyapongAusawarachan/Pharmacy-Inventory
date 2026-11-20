@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Sales history') %></h1><p><%= t('Latest 200 bills. Cancelled bills stay on record.') %></p></div>
+  <div class="head-actions"><a class="btn btn-primary" href="/sales/new"><%- icon('plus') %><%= t('New sale') %></a></div>
+</div>
+
+<div class="chips">
+  <a class="chip <%= !status ? 'on' : '' %>" href="/sales"><%= t('All') %></a>
+  <a class="chip <%= status === 'COMPLETED' ? 'on' : '' %>" href="/sales?status=COMPLETED"><%= t('COMPLETED') %></a>
+  <a class="chip <%= status === 'CANCELLED' ? 'on' : '' %>" href="/sales?status=CANCELLED"><%= t('CANCELLED') %></a>
+</div>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th><%= t('Bill') %></th><th><%= t('Date and time') %></th><th><%= t('Customer') %></th><th class="num"><%= t('Items') %></th><th class="num"><%= t('Total') %></th><th><%= t('Sold by') %></th><th><%= t('Status') %></th></tr></thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="7" class="empty"><%= t('No sales yet. Start with New sale.') %></td></tr><% } %>
+    <% rows.forEach(function (s) { %>
+      <tr class="<%= s.status === 'CANCELLED' ? 'row-inactive' : '' %>">
+        <td><a href="/sales/<%= s.sale_id %>"><strong>#<%= s.sale_id %></strong></a></td>
+        <td class="nowrap"><%= fmtDateTime(s.sale_datetime) %></td>
+        <td><%= s.customer_name || '' %><% if (s.patient_code) { %> <a class="mono" href="/patients/<%= s.patient_code %>"><%= s.patient_code %></a><% } %>
+          <% if (s.override_reason) { %><br><span class="tag tag-warn"><%- icon('alert') %><%= t('Allergy override') %></span><% } %></td>
+        <td class="num"><%= s.item_count %></td>
+        <td class="num">฿<%= money(s.total_amount) %></td>
+        <td><%= s.staff_name %></td>
+        <td><% if (s.status === 'COMPLETED') { %><span class="tag tag-ok"><%- icon('check') %><%= t('COMPLETED') %></span><% } else { %><span class="tag tag-dark"><%- icon('x') %><%= t('CANCELLED') %></span><% } %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

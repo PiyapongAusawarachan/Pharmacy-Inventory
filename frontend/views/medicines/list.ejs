@@ -1,0 +1,67 @@
+<%- include('../partials/header') %>
+
+<% const hasImages = rows.some(function (m) { return m.image_path; }); const unverified = rows.filter(function (m) { return m.data_status !== 'VERIFIED'; }).length; %>
+<div class="page-head">
+  <div><h1><%= t('Medicines') %></h1><p><%= t('{0} item(s). Prices and stock are per base unit.', rows.length) %></p></div>
+  <% if (canWrite) { %><div class="head-actions"><a class="btn btn-primary" href="/medicines/new"><%- icon('plus') %><%= t('Add medicine') %></a></div><% } %>
+</div>
+
+<form class="filters" method="get" action="/medicines">
+  <input class="grow" type="search" name="q" value="<%= q %>" placeholder="<%= t('Search generic or brand name') %>" aria-label="<%= t('Search generic or brand name') %>">
+  <button class="btn" type="submit"><%= t('Search') %></button>
+  <% if (q) { %><a class="btn" href="/medicines"><%= t('Clear') %></a><% } %>
+</form>
+
+<% if (unverified) { %><p class="note"><%= t('{0} item(s) are demo data that no pharmacist has checked against the Thai FDA register yet.', unverified) %></p><% } %>
+
+<div class="table-wrap">
+<table class="table">
+  <thead>
+    <tr>
+      <% if (hasImages) { %><th></th><% } %><th><%= t('Medicine') %></th><th><%= t('Strength / form') %></th><th><%= t('Drug class') %></th><th><%= t('Legal category') %></th>
+      <th class="num"><%= t('Sellable stock') %></th><th class="num"><%= t('Price / unit') %></th><% if (canWrite) { %><th class="actions-col"><%= t('Actions') %></th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="8" class="empty"><%= t('No medicines found.') %></td></tr><% } %>
+    <% rows.forEach(function (m) { %>
+      <tr class="<%= m.is_active ? '' : 'row-inactive' %>">
+        <% if (hasImages) { %><td class="thumb-col">
+          <% if (m.image_path) { %><img class="thumb" src="/uploads/<%= m.image_path %>" alt=""><% } else { %><span class="thumb thumb-empty"></span><% } %>
+        </td><% } %>
+        <td>
+          <strong><%= m.generic_name %></strong>
+          <% if (m.brand_name) { %><br><span class="muted small"><%= m.brand_name %></span><% } %>
+          <% if (!m.is_active) { %><br><span class="tag"><%= t('Inactive') %></span><% } %>
+        </td>
+        <td><%= m.strength %><br><span class="muted small"><%= m.dosage_form %></span></td>
+        <td><%= m.drug_class === 'OTHER' ? '—' : (DRUG_CLASSES[m.drug_class] ? DRUG_CLASSES[m.drug_class].label : m.drug_class) %></td>
+        <td>
+          <div class="tags">
+            <span class="tag <%= m.legal_category === 'HOUSEHOLD' ? 'tag-ok' : (m.legal_category === 'PACKAGED_NON_DANGEROUS' ? '' : (m.legal_category === 'DANGEROUS' ? 'tag-warn' : 'tag-bad')) %>"><%= t(m.legal_category) %></span>
+            <% if (m.requires_prescription) { %><span class="tag tag-line">Rx</span><% } %>
+            <% if (m.requires_khy11) { %><span class="tag tag-line">ข.ย.11</span><% } %>
+            <% if (m.data_status === 'VERIFIED') { %><span class="tag tag-line"><%- icon('check') %><%= t('Checked') %></span><% } %>
+          </div>
+        </td>
+        <td class="num nowrap">
+          <%= m.sellable_qty %> <%= m.base_unit %>
+          <% if (m.is_active && m.sellable_qty <= m.reorder_level) { %><br><span class="tag tag-bad" title="<%= t('Reorder level') %>: <%= m.reorder_level %>"><%- icon('down') %><%= t('Low stock') %></span><% } %>
+        </td>
+        <td class="num">฿<%= money(m.sell_price) %></td>
+        <% if (canWrite) { %>
+          <td class="actions wrap">
+            <a class="btn btn-small" href="/lots/new?medicine=<%= m.medicine_id %>"><%= t('Receive') %></a>
+            <a class="btn btn-small" href="/medicines/<%= m.medicine_id %>/edit"><%= t('Edit') %></a>
+            <form method="post" action="/medicines/<%= m.medicine_id %>/delete" onsubmit="return confirm('<%= t('Delete this medicine? If it has lots or sales history it is deactivated instead.') %>');">
+              <button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button>
+            </form>
+          </td>
+        <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

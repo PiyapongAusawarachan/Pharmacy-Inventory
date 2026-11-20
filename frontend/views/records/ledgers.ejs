@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Ledgers') %></h1><p><%= t('Built from the transaction data, so nothing is typed twice. Layout simplified for this project.') %></p></div>
+  <div class="head-actions"><button class="btn" type="button" onclick="window.print()"><%= t('Print') %></button></div>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>ข.ย.11 · <%= t('Sales of designated dangerous drugs') %></h2></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th><%= t('Date and time') %></th><th><%= t('Bill') %></th><th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th class="num"><%= t('Quantity') %></th><th><%= t('Customer') %></th><th><%= t('Sold by') %></th></tr></thead>
+      <tbody>
+        <% if (!khy11.length) { %><tr><td colspan="7" class="empty"><%= t('No sales of ข.ย.11 drugs yet.') %></td></tr><% } %>
+        <% khy11.forEach(function (r) { %>
+          <tr class="<%= r.status === 'CANCELLED' ? 'row-inactive' : '' %>">
+            <td class="nowrap"><%= fmtDateTime(r.sale_datetime) %></td>
+            <td><a href="/sales/<%= r.sale_id %>">#<%= r.sale_id %></a><% if (r.status === 'CANCELLED') { %> <span class="tag tag-dark"><%= t('CANCELLED') %></span><% } %></td>
+            <td><strong><%= r.generic_name %></strong> <%= r.strength %></td>
+            <td class="mono"><%= r.lot_number %></td>
+            <td class="num nowrap"><%= r.quantity %> <%= r.base_unit %></td>
+            <td><%= r.customer_name || '' %></td>
+            <td><%= r.staff_name %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>ข.ย.9 · <%= t('Drug purchases (stock received)') %></h2></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th><%= t('Received') %></th><th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th><%= t('Expiry') %></th><th class="num"><%= t('Quantity') %></th><th class="num"><%= t('Unit cost') %></th><th><%= t('Supplier') %></th></tr></thead>
+      <tbody>
+        <% purchases.forEach(function (r) { %>
+          <tr>
+            <td class="nowrap"><%= fmtDate(r.received_date) %></td>
+            <td><strong><%= r.generic_name %></strong> <%= r.strength %><%= r.brand_name ? ' · ' + r.brand_name : '' %></td>
+            <td class="mono"><%= r.lot_number %></td>
+            <td class="nowrap"><%= fmtDate(r.expiry_date) %></td>
+            <td class="num nowrap"><%= r.qty_received %> <%= r.base_unit %></td>
+            <td class="num">฿<%= money(r.unit_cost) %></td>
+            <td><%= r.supplier_name %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

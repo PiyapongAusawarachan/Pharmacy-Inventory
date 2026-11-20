@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+
+<div class="page-head"><h1><%= t(mode === 'new' ? 'Add supplier' : 'Edit supplier') %></h1></div>
+<%- include('../partials/errors') %>
+
+<form class="form card-body card" method="post" action="<%= mode === 'new' ? '/suppliers' : '/suppliers/' + s.supplier_id %>">
+  <label><%= t('Name') %>
+    <input type="text" name="name" value="<%= s.name %>" maxlength="150" required>
+  </label>
+  <label><%= t('Phone') %>
+    <input type="text" name="phone" value="<%= s.phone || '' %>" maxlength="30">
+  </label>
+  <label><%= t('Address') %>
+    <textarea name="address" rows="3"><%= s.address || '' %></textarea>
+  </label>
+  <% if (mode === 'edit') { %>
+    <label class="check"><input type="checkbox" name="is_active" <%= s.is_active ? 'checked' : '' %>> <%= t('Supplier is active') %></label>
+  <% } %>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit"><%= t('Save') %></button>
+    <a class="btn" href="/suppliers"><%= t('Cancel') %></a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

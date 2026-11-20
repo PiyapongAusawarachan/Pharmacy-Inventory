@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Patients and allergies') %></h1><p><%= t('Profiles are stored in MongoDB. Allergies here are checked on every sale.') %></p></div>
+  <% if (canWrite) { %><div class="head-actions"><a class="btn btn-primary" href="/patients/new"><%- icon('plus') %><%= t('Add patient') %></a></div><% } %>
+</div>
+
+<form class="filters" method="get" action="/patients">
+  <input class="grow" type="search" name="q" value="<%= q %>" placeholder="<%= t('Search name or patient code') %>" aria-label="<%= t('Search name or patient code') %>">
+  <button class="btn" type="submit"><%= t('Search') %></button>
+  <% if (q) { %><a class="btn" href="/patients"><%= t('Clear') %></a><% } %>
+</form>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th><%= t('Patient code') %></th><th><%= t('Name') %></th><th><%= t('Phone') %></th><th><%= t('Drug allergies') %></th><th class="actions-col"><%= t('Actions') %></th></tr></thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="5" class="empty"><%= t('No patients found.') %></td></tr><% } %>
+    <% rows.forEach(function (p) { %>
+      <tr>
+        <td class="mono"><a href="/patients/<%= p.patient_code %>"><%= p.patient_code %></a></td>
+        <td><strong><%= p.name %></strong></td>
+        <td><%= p.phone || '' %></td>
+        <td><div class="tags">
+          <% if (!p.allergies.length) { %><span class="muted small"><%= t('None recorded') %></span><% } %>
+          <% p.allergies.forEach(function (a) { %><span class="tag <%= a.verification_status === 'REFUTED' ? '' : 'tag-bad' %>"><%- icon('alert') %><%= a.allergen.display %></span><% }) %>
+        </div></td>
+        <td class="actions">
+          <a class="btn btn-small" href="/sales/new?patient=<%= p.patient_code %>"><%= t('Sell') %></a>
+          <a class="btn btn-small" href="/patients/<%= p.patient_code %>"><%= t('Open') %></a>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= t(title) %> · Pharmacy Inventory</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
+<%
+  const under = function (p) { return currentPath === p || currentPath.indexOf(p + '/') === 0; };
+  const at = function (p) { return under(p) ? 'active' : ''; };
+  const anyOf = function (list) { return list.some(under) ? 'active' : ''; };
+  const langSwitch = '<span class="lang" aria-label="Language"><a class="' + (lang === 'th' ? 'on' : '') + '" href="/lang/th">TH</a><span>|</span><a class="' + (lang === 'en' ? 'on' : '') + '" href="/lang/en">EN</a></span>';
+%>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="/"><svg class="brand-mark" width="38" height="38" viewBox="0 0 120 120" aria-hidden="true"><rect x="4" y="4" width="112" height="112" rx="30" fill="#008180"/><rect x="28" y="30" width="64" height="14" rx="7" fill="#c84d12"/><rect x="28" y="53" width="64" height="14" rx="7" fill="#fff" opacity="0.9"/><rect x="28" y="76" width="64" height="14" rx="7" fill="#fff" opacity="0.55"/></svg><span>Pharmacy<br>Inventory</span></a>
+    <% if (user) { %>
+    <nav class="menu" aria-label="<%= t('Main menu') %>">
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>"><%= t('Dashboard') %></a>
+      <details class="drop <%= anyOf(['/medicines', '/lots', '/suppliers']) %>">
+        <summary><%= t('Stock') %></summary>
+        <div class="drop-panel">
+          <a href="/medicines" class="<%= at('/medicines') %>"><%= t('Medicines') %></a>
+          <a href="/lots" class="<%= at('/lots') %>"><%= t('Stock lots') %></a>
+          <a href="/suppliers" class="<%= at('/suppliers') %>"><%= t('Suppliers') %></a>
+        </div>
+      </details>
+      <a href="/patients" class="<%= at('/patients') %>"><%= t('Patients') %></a>
+      <a href="/sales" class="<%= under('/sales') && currentPath !== '/sales/new' ? 'active' : '' %>"><%= t('Sales history') %></a>
+      <details class="drop <%= anyOf(['/alerts', '/notifications', '/ledgers', '/audit']) %>">
+        <summary><%= t('Records') %><% if (navCounts.alerts + navCounts.notifications) { %><span class="count"><%= navCounts.alerts + navCounts.notifications %></span><% } %></summary>
+        <div class="drop-panel">
+          <a href="/alerts" class="<%= at('/alerts') %>"><%= t('Stock alerts') %><% if (navCounts.alerts) { %><span class="count"><%= navCounts.alerts %></span><% } %></a>
+          <a href="/notifications" class="<%= at('/notifications') %>"><%= t('Notifications') %><% if (navCounts.notifications) { %><span class="count"><%= navCounts.notifications %></span><% } %></a>
+          <a href="/ledgers" class="<%= at('/ledgers') %>"><%= t('Ledgers') %></a>
+          <a href="/audit" class="<%= at('/audit') %>"><%= t('Audit log') %></a>
+        </div>
+      </details>
+      <% if (user.role === 'ADMIN') { %>
+        <a href="/staff" class="<%= at('/staff') %>"><%= t('Staff') %></a>
+      <% } %>
+    </nav>
+    <div class="bar-right">
+      <%- langSwitch %>
+      <div class="who">
+        <strong><%= user.full_name %></strong>
+        <span class="muted"><%= t(user.role) %></span> ·
+        <form method="post" action="/logout"><button class="link-btn" type="submit"><%= t('Sign out') %></button></form>
+      </div>
+      <a class="btn btn-primary" href="/sales/new"><%- icon('plus') %><%= t('New sale') %></a>
+    </div>
+    <% } else { %>
+    <nav class="menu" aria-label="<%= t('Main menu') %>">
+      <a href="/#services"><%= t('Our services') %></a>
+      <a href="/#safety"><%= t('Medicine safety') %></a>
+      <a href="/#visit"><%= t('Visit us') %></a>
+    </nav>
+    <div class="bar-right">
+      <%- langSwitch %>
+      <a class="btn btn-primary" href="/login"><%= t('Staff sign in') %></a>
+    </div>
+    <% } %>
+  </div>
+</header>
+<% if (typeof landing === 'undefined' || !landing) { %>
+<main class="<%= user ? 'content' : 'plain' %>"><div class="container">
+<% } else { %>
+<main>
+<% } %>
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>" role="status"><%- icon(flash.type === 'success' ? 'check' : 'alert') %><div><%= t(flash.msg) %></div></div>
+    <% } %>

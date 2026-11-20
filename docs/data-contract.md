@@ -2,9 +2,9 @@
 
 Allergy checks compare data in MongoDB (`patient_notes`) with data in PostgreSQL (`medicines`). A foreign key cannot cross two databases, so both sides must follow the rules below. **Lock these on day 1.** Changing them later means changing three places together:
 
-1. `src/config/contract.js`
-2. `db/sql/001_schema.sql` (enums and CHECK constraints)
-3. `db/mongo/collections.js` (validators)
+1. `backend/config/contract.js`
+2. `database/sql/001_schema.sql` (enums and CHECK constraints)
+3. `database/mongo/collections.js` (validators)
 
 ## 1. `medicines.generic_name`
 

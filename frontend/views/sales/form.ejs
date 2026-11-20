@@ -1,0 +1,95 @@
+<%- include('../partials/header') %>
+<%
+  const strings = {
+    outOfStock: t('Out of stock'), inStock: t('in stock'), remove: t('Remove'), short: t('Short by {0}'),
+    exact: t('exact ingredient on the allergy record'), sameClass: t('same drug class as the recorded allergy'),
+    pharmacistOnly: t('This bill contains dangerous or specially controlled drugs. Only the pharmacist on duty can confirm it.'),
+    nameNeeded: t('Customer name is required: this bill contains a drug recorded on the sales ledger.'),
+    maxPerSale: t('At most {0} per sale'), noAllergy: t('No drug allergies on record'), walkIn: t('No allergy check: walk-in customer'),
+    lots: t('Deduct from'), stopTitle: t('Stop: the patient is allergic to this medicine'), cautionTitle: t('Check: same drug class as a recorded allergy'),
+    legal: { HOUSEHOLD: t('HOUSEHOLD'), PACKAGED_NON_DANGEROUS: t('PACKAGED_NON_DANGEROUS'), DANGEROUS: t('DANGEROUS'), SPECIAL_CONTROLLED: t('SPECIAL_CONTROLLED') },
+  };
+  const payload = Object.assign({}, saleData, { strings: strings, role: user.role, patientCode: form.patient_code });
+%>
+
+<div class="page-head">
+  <div><h1><%= t('New sale') %></h1><p><%= t('Stock is deducted from the lot that expires first (FEFO), across lots if needed.') %></p></div>
+</div>
+<%- include('../partials/errors') %>
+
+<form id="sale-form" method="post" action="/sales" autocomplete="off">
+<div class="cols">
+  <div class="main">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Customer') %></h2></div>
+      <div class="card-body">
+        <div class="form-row">
+          <label><%= t('Patient profile (for the allergy check)') %>
+            <select name="patient_code" id="patient" data-search>
+              <option value=""><%= t('Walk-in customer, no profile') %></option>
+              <% saleData.patients.forEach(function (p) { %>
+                <option value="<%= p.code %>" <%= form.patient_code === p.code ? 'selected' : '' %>><%= p.code %> · <%= p.name %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label><%= t('Customer name') %>
+            <input type="text" name="customer_name" id="customer-name" value="<%= form.customer_name %>" maxlength="150">
+          </label>
+        </div>
+        <div class="tags" id="patient-allergies"></div>
+      </div>
+    </section>
+
+    <section class="stop" id="allergy-box" hidden role="alert">
+      <h2><%- icon('alert') %><span id="allergy-title"></span></h2>
+      <ul id="allergy-list"></ul>
+      <label id="reason-wrap"><%= t('To sell anyway, the pharmacist must give a reason (saved in the audit log)') %>
+        <textarea name="override_reason" rows="2" maxlength="500"><%= form.override_reason %></textarea>
+      </label>
+      <label class="check" id="ack-wrap"><input type="checkbox" name="ack_class" <%= form.ack_class ? 'checked' : '' %>> <%= t('I am the pharmacist and I reviewed this same-class warning with the patient') %></label>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('Add medicine') %></h2><span class="kbd">F2</span></div>
+      <div class="card-body">
+        <div class="searchbox">
+          <%- icon('search') %>
+          <input type="search" id="search" placeholder="<%= t('Type a generic or brand name, then Enter') %>" aria-label="<%= t('Search medicine') %>" autofocus>
+        </div>
+        <div class="results" id="results"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('Bill') %></h2></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th><%= t('Medicine') %></th><th class="num"><%= t('Quantity') %></th><th class="num"><%= t('Price / unit') %></th><th class="num"><%= t('Total') %></th><th></th></tr></thead>
+          <tbody id="cart"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="aside">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Summary') %></h2></div>
+      <div class="card-body">
+        <div id="notes"></div>
+        <label class="check" id="rx-wrap" hidden><input type="checkbox" name="rx_confirmed" <%= form.rx_confirmed ? 'checked' : '' %>> <%= t('I have seen the prescription') %></label>
+        <div class="total-row"><span><%= t('Total') %></span><strong id="total">฿0.00</strong></div>
+        <button class="btn btn-primary btn-big" type="submit" id="submit"><%= t('Confirm sale') %></button>
+      </div>
+    </section>
+    <div class="note note-dark">
+      <strong><%= t('If any medicine is short') %></strong><br>
+      <%= t('The whole bill is rolled back: no lot is deducted and the attempt is written to the audit log.') %>
+    </div>
+  </div>
+</div>
+</form>
+
+<script type="application/json" id="sale-data"><%- JSON.stringify(payload).replace(/</g, '\\u003c') %></script>
+<script src="/js/sale.js"></script>
+
+<%- include('../partials/footer') %>

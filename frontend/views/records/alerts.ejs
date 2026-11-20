@@ -1,0 +1,44 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Stock alerts') %></h1><p><%= t('Low stock, near-expiry and expired lots. Stored in MongoDB.') %></p></div>
+  <div class="head-actions"><form method="post" action="/alerts/scan"><button class="btn btn-primary" type="submit"><%= t('Scan stock now') %></button></form></div>
+</div>
+
+<div class="chips">
+  <a class="chip <%= !status ? 'on' : '' %>" href="/alerts"><%= t('All') %></a>
+  <% ['OPEN', 'ACKNOWLEDGED', 'RESOLVED'].forEach(function (s) { %><a class="chip <%= status === s ? 'on' : '' %>" href="/alerts?status=<%= s %>"><%= t(s) %></a><% }) %>
+</div>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th><%= t('Problem') %></th><th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th class="num"><%= t('Quantity') %></th><th><%= t('Raised') %></th><th><%= t('Status') %></th><% if (canWrite) { %><th class="actions-col"><%= t('Actions') %></th><% } %></tr></thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="7" class="empty"><%= t('No alerts. Run a stock scan to check.') %></td></tr><% } %>
+    <% rows.forEach(function (a) { %>
+      <tr class="<%= a.status === 'RESOLVED' ? 'row-inactive' : '' %>">
+        <td><% if (a.type === 'EXPIRED') { %><span class="tag tag-dark"><%- icon('x') %><%= t('EXPIRED') %></span>
+            <% } else if (a.type === 'NEAR_EXPIRY') { %><span class="tag tag-warn"><%- icon('clock') %><%= t('NEAR_EXPIRY') %></span>
+            <% } else { %><span class="tag tag-bad"><%- icon('down') %><%= t('LOW_STOCK') %></span><% } %></td>
+        <td><% if (a.med) { %><strong><%= a.med.generic_name %></strong> <%= a.med.strength %><% } else { %><span class="muted">#<%= a.medicine_id %></span><% } %></td>
+        <td class="mono nowrap"><%= a.lot_number || '' %><% if (a.expiry_date) { %><br><span class="muted small"><%= fmtDate(a.expiry_date) %></span><% } %></td>
+        <td class="num nowrap"><%= a.current_qty %><% if (a.type === 'LOW_STOCK') { %> <span class="muted">/ <%= a.threshold %></span><% } %></td>
+        <td class="nowrap muted small"><%= fmtDateTime(a.created_at) %></td>
+        <td><span class="tag <%= a.status === 'OPEN' ? 'tag-warn' : (a.status === 'RESOLVED' ? 'tag-ok' : '') %>"><%= t(a.status) %></span></td>
+        <% if (canWrite) { %>
+        <td class="actions">
+          <% if (a.status === 'OPEN') { %><form method="post" action="/alerts/<%= a._id %>/status"><input type="hidden" name="status" value="ACKNOWLEDGED"><button class="btn btn-small" type="submit"><%= t('Acknowledge') %></button></form><% } %>
+          <% if (a.status !== 'RESOLVED') { %><form method="post" action="/alerts/<%= a._id %>/status"><input type="hidden" name="status" value="RESOLVED"><button class="btn btn-small" type="submit"><%= t('Resolve') %></button></form>
+          <% } else { %>
+            <form method="post" action="/alerts/<%= a._id %>/status"><input type="hidden" name="status" value="OPEN"><button class="btn btn-small" type="submit"><%= t('Reopen') %></button></form>
+            <form method="post" action="/alerts/<%= a._id %>/delete"><button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button></form>
+          <% } %>
+        </td>
+        <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

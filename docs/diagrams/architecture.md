@@ -9,7 +9,8 @@ flowchart TB
     subgraph APP["Node.js + Express server"]
         V["EJS views<br/>(server-rendered pages)"]
         R["Routes / controllers"]
-        S["Services<br/>sale (FEFO), allergy check, alerts"]
+        S["Services<br/>sale (FEFO, cancel), allergy check, alerts, audit"]
+        I["Language middleware<br/>Thai / English (cookie)"]
         PGD["pg driver<br/>withTransaction()"]
         MGD["mongodb driver"]
     end
@@ -20,6 +21,7 @@ flowchart TB
 
     U <-->|HTTP| V
     V --- R
+    I --- V
     R --> S
     S --> PGD
     S --> MGD
@@ -38,10 +40,10 @@ sequenceDiagram
     participant P as PostgreSQL
 
     Staff->>App: Submit sale (patient, items)
-    App->>App: Check role (DANGEROUS / SPECIAL_CONTROLLED → PHARMACIST)
+    App->>App: Check role (DANGEROUS / SPECIAL_CONTROLLED → PHARMACIST),<br/>customer name, prescription tick, max qty per sale
     App->>M: Read patient_notes (allergies)
     alt Allergy match
-        App-->>Staff: Block / warn
+        App-->>Staff: Block, unless a pharmacist gives a reason (override)
     end
     App->>P: BEGIN
     App->>P: INSERT sales
@@ -55,10 +57,12 @@ sequenceDiagram
         App-->>Staff: "Insufficient stock"
     else OK
         App->>P: UPDATE sales.total_amount, COMMIT
-        App->>M: INSERT audit_logs (SALE_COMMITTED)
+        App->>M: INSERT audit_logs (SALE_COMMITTED, ALLERGY_OVERRIDE if any)
         App->>M: INSERT stock_alerts / notifications (if needed)
         App-->>Staff: Receipt
     end
 ```
+
+Cancelling a bill is a second transaction: it returns each quantity to the lot it came from and marks the sale cancelled; if a lot was adjusted afterwards and the return would break a stock rule, the whole cancel rolls back. It writes `SALE_CANCELLED` to `audit_logs` after commit.
 
 Known limitation: the MongoDB writes happen after the SQL commit. If a MongoDB write fails, the sale stands without its log entry.

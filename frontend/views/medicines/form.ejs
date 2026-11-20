@@ -1,0 +1,121 @@
+<%- include('../partials/header') %>
+
+<div class="page-head"><h1><%= t(mode === 'new' ? 'Add medicine' : 'Edit medicine') %></h1></div>
+<%- include('../partials/errors') %>
+
+<form class="form card card-body" method="post" enctype="multipart/form-data"
+      action="<%= mode === 'new' ? '/medicines' : '/medicines/' + m.medicine_id %>">
+
+  <label><%= t('Generic name') %>
+    <input type="text" name="generic_name" value="<%= m.generic_name %>" maxlength="200" required>
+    <small><%= t('Lowercase. For combination products join ingredients with +, e.g. amoxicillin+clavulanic acid.') %></small>
+  </label>
+
+  <div class="form-row">
+    <label><%= t('Brand name (optional)') %>
+      <input type="text" name="brand_name" value="<%= m.brand_name || '' %>" maxlength="150">
+    </label>
+    <label><%= t('Thai FDA registration no. (optional)') %>
+      <input type="text" name="registration_no" value="<%= m.registration_no || '' %>" maxlength="30" placeholder="1A 114/55">
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label><%= t('Strength') %>
+      <input type="text" name="strength" value="<%= m.strength %>" maxlength="50" placeholder="500 mg" required>
+    </label>
+    <label><%= t('Dosage form') %>
+      <input type="text" name="dosage_form" value="<%= m.dosage_form %>" maxlength="50" placeholder="tablet, syrup" required>
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label><%= t('Drug class') %>
+      <select name="drug_class" required data-search>
+        <option value=""><%= t('— pick one —') %></option>
+        <% Object.keys(DRUG_CLASSES).forEach(function (k) { %>
+          <option value="<%= k %>" <%= m.drug_class === k ? 'selected' : '' %>><%= DRUG_CLASSES[k].label %></option>
+        <% }) %>
+      </select>
+      <small><%= t('Used for allergy checks, e.g. a penicillin allergy matches every PENICILLINS medicine.') %></small>
+    </label>
+    <label><%= t('Legal category') %>
+      <select name="legal_category" required>
+        <% LEGAL_CATEGORIES.forEach(function (c) { %>
+          <option value="<%= c %>" <%= m.legal_category === c ? 'selected' : '' %>><%= LEGAL_LABELS[c] %></option>
+        <% }) %>
+      </select>
+      <small><%= t('Dangerous and specially controlled drugs can only be sold by the pharmacist.') %></small>
+    </label>
+  </div>
+
+  <label class="check"><input type="checkbox" name="requires_prescription" <%= m.requires_prescription ? 'checked' : '' %>> <%= t('Requires a prescription (always on for specially controlled drugs)') %></label>
+  <label class="check"><input type="checkbox" name="requires_khy11" <%= m.requires_khy11 ? 'checked' : '' %>> <%= t('Sale must be recorded on form ข.ย.11') %></label>
+
+  <div class="form-row">
+    <label><%= t('Base unit') %>
+      <input type="text" name="base_unit" value="<%= m.base_unit %>" maxlength="20" placeholder="tablet, bottle" required>
+      <small><%= t('The smallest unit you sell. All stock and prices use it.') %></small>
+    </label>
+    <label><%= t('Units per pack') %>
+      <input type="number" name="units_per_pack" value="<%= m.units_per_pack %>" min="1" step="1" required>
+    </label>
+  </div>
+
+  <div class="form-row">
+    <label><%= t('Sell price per unit') %> (฿)
+      <input type="number" name="sell_price" value="<%= m.sell_price %>" min="0" step="0.01" required>
+    </label>
+    <label><%= t('Reorder level (units)') %>
+      <input type="number" name="reorder_level" value="<%= m.reorder_level %>" min="0" step="1">
+    </label>
+    <label><%= t('Maximum per sale (units, optional)') %>
+      <input type="number" name="max_qty_per_sale" value="<%= m.max_qty_per_sale || '' %>" min="1" step="1">
+    </label>
+  </div>
+
+  <p class="form-section"><%= t('Information for counselling (shown on the sale)') %></p>
+  <label><%= t('Used for') %>
+    <input type="text" name="indication" value="<%= m.indication || '' %>">
+  </label>
+  <div class="form-row">
+    <label><%= t('Common side effects') %>
+      <textarea name="side_effects" rows="2"><%= m.side_effects || '' %></textarea>
+    </label>
+    <label><%= t('Warnings and who should not take it') %>
+      <textarea name="warnings" rows="2"><%= m.warnings || '' %></textarea>
+    </label>
+  </div>
+  <div class="form-row">
+    <label><%= t('Maximum adult dose per day') %>
+      <input type="text" name="max_daily_dose" value="<%= m.max_daily_dose || '' %>" maxlength="150">
+    </label>
+    <label><%= t('Storage') %>
+      <input type="text" name="storage_note" value="<%= m.storage_note || '' %>" maxlength="150">
+    </label>
+  </div>
+  <label class="check"><input type="checkbox" name="data_status" value="VERIFIED" <%= m.data_status === 'VERIFIED' ? 'checked' : '' %>> <%= t('A pharmacist has checked this information against the registered label') %></label>
+
+  <% if (mode === 'edit') { %>
+    <label class="check"><input type="checkbox" name="is_active" <%= m.is_active ? 'checked' : '' %>> <%= t('Medicine is active') %></label>
+  <% } %>
+
+  <% if (m.image_path) { %>
+    <div class="current-image">
+      <img class="thumb thumb-large" src="/uploads/<%= m.image_path %>" alt="">
+      <label class="check"><input type="checkbox" name="remove_image"> <%= t('Remove this image') %></label>
+    </div>
+  <% } %>
+
+  <%# The file field must stay last: if the upload is rejected, the fields above are still read. %>
+  <label><%= t('Image (JPG, PNG or WebP, up to 2 MB)') %>
+    <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
+  </label>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit"><%= t('Save') %></button>
+    <a class="btn" href="/medicines"><%= t('Cancel') %></a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,34 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <h1><%= t('Staff') %></h1>
+  <a class="btn btn-primary" href="/staff/new"><%- icon('plus') %><%= t('Add staff') %></a>
+</div>
+
+<div class="table-wrap">
+<table class="table">
+  <thead>
+    <tr><th><%= t('Username') %></th><th><%= t('Full name') %></th><th><%= t('Role') %></th><th><%= t('Status') %></th><th class="actions-col"><%= t('Actions') %></th></tr>
+  </thead>
+  <tbody>
+    <% rows.forEach(function (s) { %>
+      <tr class="<%= s.is_active ? '' : 'row-inactive' %>">
+        <td><%= s.username %></td>
+        <td><%= s.full_name %></td>
+        <td><span class="tag"><%= t(s.role) %></span></td>
+        <td><span class="tag <%= s.is_active ? 'tag-ok' : '' %>"><%= t(s.is_active ? 'Active' : 'Inactive') %></span></td>
+        <td class="actions">
+          <a class="btn btn-small" href="/staff/<%= s.staff_id %>/edit"><%= t('Edit') %></a>
+          <% if (s.staff_id !== user.staff_id) { %>
+            <form method="post" action="/staff/<%= s.staff_id %>/delete" onsubmit="return confirm('<%= t('Delete this account? If it has sales history it is deactivated instead.') %>');">
+              <button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

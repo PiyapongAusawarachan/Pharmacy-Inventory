@@ -1,0 +1,97 @@
+<%- include('partials/header') %>
+<%
+  const svc = function (iconPath, title, text) {
+    return '<article class="svc"><span class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + iconPath + '</svg></span><h3>' + title + '</h3><p>' + text + '</p></article>';
+  };
+  const esc = function (x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+%>
+<section class="hero">
+  <div class="hero-in">
+    <div class="hero-text">
+      <p class="eyebrow"><%= t('Community pharmacy · pharmacist on duty') %></p>
+      <h1><%= t('Your neighbourhood pharmacy, with a pharmacist who checks before every sale') %></h1>
+      <p class="lead"><%= t('Tell us your drug allergies once. Every time you buy, the system checks them, sells the stock that expires first, and records it as the law requires.') %></p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="#visit"><%= t('Visit the shop') %></a>
+        <a class="btn btn-lg" href="#services"><%= t('Our services') %></a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 360 300" role="img">
+        <circle cx="190" cy="150" r="128" fill="#cfeae9"/>
+        <rect x="118" y="78" width="124" height="168" rx="22" fill="#ffffff" stroke="#008180" stroke-width="4"/>
+        <rect x="132" y="56" width="96" height="34" rx="10" fill="#008180"/>
+        <rect x="140" y="122" width="80" height="58" rx="10" fill="#e8f5f4"/>
+        <path d="M180 133v36M162 151h36" stroke="#008180" stroke-width="7" stroke-linecap="round"/>
+        <rect x="140" y="196" width="80" height="8" rx="4" fill="#cfeae9"/>
+        <rect x="140" y="212" width="56" height="8" rx="4" fill="#cfeae9"/>
+        <g transform="rotate(-35 286 92)"><rect x="252" y="76" width="68" height="32" rx="16" fill="#ffffff" stroke="#c84d12" stroke-width="4"/><path d="M286 76v32" stroke="#c84d12" stroke-width="4"/><rect x="288" y="78" width="30" height="28" rx="14" fill="#f66e32"/></g>
+        <circle cx="70" cy="214" r="26" fill="#ffffff" stroke="#008180" stroke-width="4"/><path d="M58 214h24" stroke="#008180" stroke-width="4" stroke-linecap="round"/>
+        <path d="M296 214l7 7 14-15" fill="none" stroke="#008180" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+  <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 50 C 240 100 480 0 720 40 S 1200 90 1440 30 L1440 90 L0 90 Z" fill="#ffffff"/></svg>
+</section>
+
+<section class="band" id="services">
+  <div class="band-in">
+    <h2 class="section-title"><%= t('Our services') %></h2>
+    <p class="section-lead"><%= t('What happens at the counter, and how the shop system supports it.') %></p>
+    <div class="svc-grid">
+      <%- svc('<path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/>', esc(t('Allergy check on every sale')), esc(t('Your allergies are kept on file. If a medicine matches, the sale stops until the pharmacist reviews it.'))) %>
+      <%- svc('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>', esc(t('Advice from a pharmacist')), esc(t('Dangerous and specially controlled drugs are only sold by the pharmacist on duty.'))) %>
+      <%- svc('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', esc(t('No expired medicine')), esc(t('Stock is tracked by lot and expiry date. The lot that expires first is sold first, and expired lots can never be sold.'))) %>
+      <%- svc('<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>', esc(t('Clear advice with every bill')), esc(t('Each bill lists what the medicine is for, the maximum daily dose and the main warnings.'))) %>
+      <%- svc('<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/>', esc(t('Records kept as required')), esc(t('Purchases and sales of controlled items are written to the ledgers automatically, so nothing is missed.'))) %>
+      <%- svc('<path d="M3 12h4l3 7 4-14 3 7h4"/>', esc(t('Your purchase history')), esc(t('With a patient profile, the pharmacist can see what you bought before and avoid repeats or interactions.'))) %>
+    </div>
+  </div>
+</section>
+
+<section class="band band-tint" id="safety">
+  <div class="band-in split">
+    <div>
+      <h2 class="section-title"><%= t('Medicine safety, step by step') %></h2>
+      <ol class="steps">
+        <li><strong><%= t('Tell us about allergies') %></strong><span><%= t('Name the medicine or group and what happened. It is saved to your profile.') %></span></li>
+        <li><strong><%= t('We check before we sell') %></strong><span><%= t('Exact matches stop the sale. Same-group matches need the pharmacist to confirm.') %></span></li>
+        <li><strong><%= t('You get the freshest stock') %></strong><span><%= t('The system picks the lot that expires first but is still in date.') %></span></li>
+        <li><strong><%= t('Everything is recorded') %></strong><span><%= t('Every sale, cancellation and override is logged.') %></span></li>
+      </ol>
+    </div>
+    <div class="card card-body tip">
+      <h3><%= t('Before you visit') %></h3>
+      <ul>
+        <li><%= t('Bring your drug allergy card if you have one.') %></li>
+        <li><%= t('Bring the prescription for prescription-only medicines.') %></li>
+        <li><%= t('Tell the pharmacist about medicines you already take.') %></li>
+      </ul>
+      <p class="muted small"><%= t('General information only. Ask the pharmacist about your own case.') %></p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="visit">
+  <div class="band-in split">
+    <div>
+      <h2 class="section-title"><%= t('Visit us') %></h2>
+      <dl class="facts">
+        <dt><%= t('Opening hours') %></dt><dd>[<%= t('opening hours') %>]</dd>
+        <dt><%= t('Address') %></dt><dd>[<%= t('shop address') %>]</dd>
+        <dt><%= t('Phone') %></dt><dd>[<%= t('shop phone') %>]</dd>
+      </dl>
+    </div>
+    <div class="cta">
+      <h3><%= t('Staff of this pharmacy?') %></h3>
+      <p><%= t('Sign in to sell, receive stock and manage patient records.') %></p>
+      <a class="btn btn-primary btn-lg" href="/login"><%= t('Staff sign in') %></a>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="band-in"><span>Pharmacy Inventory</span><span class="muted small"><%= t('Course project demo. Not a real pharmacy and not medical advice.') %></span></div>
+</footer>
+
+<%- include('partials/footer') %>

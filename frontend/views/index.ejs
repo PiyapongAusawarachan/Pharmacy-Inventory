@@ -1,0 +1,94 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <h1><%= t('Dashboard') %></h1>
+    <p><%= fmtDate(new Date()) %> · <%= user.full_name %></p>
+  </div>
+  <div class="head-actions">
+    <% if (canWrite) { %><a class="btn" href="/lots/new"><%= t('Receive stock') %></a><% } %>
+  </div>
+</div>
+
+<% if (summary && dash) { %>
+<div class="kpis">
+  <a class="kpi" href="/sales"><span class="kpi-label"><%= t('Sales today') %></span><span class="kpi-num">฿<%= money(dash.extra.revenue_today) %></span><span class="muted small"><%= t('{0} bill(s), {1} cancelled', dash.extra.sales_today, dash.extra.cancelled_today) %></span></a>
+  <a class="kpi" href="/medicines"><span class="kpi-label"><%= t('Active medicines') %></span><span class="kpi-num"><%= summary.medicines %></span></a>
+  <a class="kpi" href="/lots?status=ACTIVE"><span class="kpi-label"><%= t('Sellable lots') %></span><span class="kpi-num"><%= summary.sellable_lots %></span></a>
+  <a class="kpi <%= summary.near_expiry ? 'kpi-warn' : '' %>" href="/lots?view=near"><span class="kpi-label"><%= t('Expiring within {0} days', NEAR_EXPIRY_DAYS) %></span><span class="kpi-num"><%= summary.near_expiry %></span></a>
+  <a class="kpi <%= summary.expired_on_shelf ? 'kpi-bad' : '' %>" href="/lots?view=expired"><span class="kpi-label"><%= t('Expired, still in stock') %></span><span class="kpi-num"><%= summary.expired_on_shelf %></span></a>
+  <a class="kpi <%= dash.extra.low_stock ? 'kpi-warn' : '' %>" href="/medicines"><span class="kpi-label"><%= t('Low stock') %></span><span class="kpi-num"><%= dash.extra.low_stock %></span></a>
+</div>
+
+<div class="cols">
+  <div class="main">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Lots to deal with first') %></h2><a href="/lots?view=near"><%= t('All lots') %></a></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th><%= t('Expiry') %></th><th class="num"><%= t('On hand') %></th><th><%= t('Status') %></th></tr></thead>
+          <tbody>
+            <% if (!dash.lots.length) { %><tr><td colspan="5" class="empty"><%= t('Nothing is expired or close to expiry.') %></td></tr><% } %>
+            <% dash.lots.forEach(function (l) { %>
+              <tr>
+                <td><strong><%= l.generic_name %></strong> <%= l.strength %></td>
+                <td class="mono nowrap"><%= l.lot_number %></td>
+                <td class="nowrap"><%= fmtDate(l.expiry_date) %></td>
+                <td class="num"><%= l.qty_on_hand %> <%= l.base_unit %></td>
+                <td>
+                  <% if (l.days_left <= 0) { %><span class="tag tag-dark"><%- icon('x') %><%= t('Expired {0} day(s) ago', -l.days_left) %></span>
+                  <% } else { %><span class="tag tag-warn"><%- icon('clock') %><%= t('{0} day(s) left', l.days_left) %></span><% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('Latest activity') %></h2><a href="/audit"><%= t('Audit log') %></a></div>
+      <div class="table-wrap">
+        <table class="table">
+          <tbody>
+            <% if (!dash.logs.length) { %><tr><td class="empty"><%= t('No activity recorded yet.') %></td></tr><% } %>
+            <% dash.logs.forEach(function (g) { %>
+              <tr>
+                <td class="nowrap muted"><%= fmtDateTime(g.ts) %></td>
+                <td><span class="tag <%= g.action === 'SALE_ROLLED_BACK' ? 'tag-bad' : (g.action === 'ALLERGY_OVERRIDE' ? 'tag-warn' : '') %>"><%= t(g.action) %></span></td>
+                <td class="muted"><%= g.entity %><%= g.entity_id !== null && g.entity_id !== undefined ? ' #' + g.entity_id : '' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="aside">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Unread notifications') %></h2><a href="/notifications"><%= t('All') %></a></div>
+      <div class="card-body">
+        <% if (!dash.notifications.length) { %><p class="muted"><%= t('You are all caught up.') %></p><% } %>
+        <% dash.notifications.forEach(function (n) { %>
+          <p><%= n.message %><br><span class="muted small"><%= fmtDateTime(n.created_at) %></span></p>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('Databases') %></h2></div>
+      <div class="card-body">
+        <p>PostgreSQL <span class="tag <%= status.postgres.ok ? 'tag-ok' : 'tag-bad' %>"><%- icon(status.postgres.ok ? 'check' : 'x') %><%= t(status.postgres.ok ? 'connected' : 'error') %></span>
+          <br><span class="muted small"><%= status.postgres.ok ? t('{0} tables', status.postgres.tables.length) : status.postgres.error %></span></p>
+        <p>MongoDB <span class="tag <%= status.mongo.ok ? 'tag-ok' : 'tag-bad' %>"><%- icon(status.mongo.ok ? 'check' : 'x') %><%= t(status.mongo.ok ? 'connected' : 'error') %></span>
+          <br><span class="muted small"><%= status.mongo.ok ? t('{0} collections', status.mongo.collections.length) : status.mongo.error %></span></p>
+      </div>
+    </section>
+  </div>
+</div>
+<% } else { %>
+  <div class="flash flash-error"><%- icon('alert') %><div><%= t('The database is not set up yet. Run npm run db:reset and npm run db:seed.') %><br><%= status.postgres.error || '' %></div></div>
+<% } %>
+
+<%- include('partials/footer') %>

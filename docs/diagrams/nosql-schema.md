@@ -1,6 +1,6 @@
 # NoSQL Document Schema (MongoDB)
 
-Source of truth: `db/mongo/collections.js` (each collection has a `$jsonSchema` validator).
+Source of truth: `database/mongo/collections.js` (each collection has a `$jsonSchema` validator).
 
 ```mermaid
 flowchart LR
@@ -35,7 +35,8 @@ flowchart LR
 
         AL["audit_logs
         ─────────────
-        action (SALE_COMMITTED, SALE_ROLLED_BACK, ...)
+        action (SALE_COMMITTED, SALE_ROLLED_BACK,
+                SALE_CANCELLED, ALLERGY_OVERRIDE, ...)
         entity, entity_id, staff_id, ts
         details {allocations[ ] {lot_id, qty}, reason, ...}"]
 
@@ -68,11 +69,15 @@ Dotted lines are logical references checked by the application. MongoDB and Post
 
 ## When each collection is written
 
-| Collection | Written when |
-|---|---|
-| `patient_notes` | CRUD from the patient page; **read before** a sale to check allergies |
-| `stock_alerts` | After a sale commits and stock falls to `reorder_level` or below; during the expiry scan (`NEAR_EXPIRY_DAYS`, default 180) |
-| `audit_logs` | After every commit, **and after every rollback** (`SALE_ROLLED_BACK`) |
-| `notifications` | After commit when an alert is raised or a specially controlled drug is sold |
+| Collection | Written when | Web page |
+|---|---|---|
+| `patient_notes` | Create / edit / delete patient, add / remove allergy, add / delete note; **read before** every sale to check allergies | `/patients` |
+| `stock_alerts` | After a sale commits and stock falls to `reorder_level` or below; when staff press "scan stock now" (expiry and low stock, `NEAR_EXPIRY_DAYS`, default 180); status changed OPEN → ACKNOWLEDGED → RESOLVED; only RESOLVED alerts can be deleted | `/alerts` |
+| `audit_logs` | After every commit **and after every rollback** (`SALE_ROLLED_BACK`), bill cancellation, allergy override, and each create / update / delete of medicines, lots, suppliers, staff, patients | `/audit` (view only) |
+| `notifications` | After commit when an alert is raised or a specially controlled drug is sold; staff can also send a message to a role or a person; recipients mark read or delete | `/notifications` |
+
+Indexes (see `database/mongo/collections.js`): `patient_notes.patient_code` unique; `stock_alerts` on `(status, type)` and `medicine_id`; `audit_logs` on `ts` descending and `(entity, entity_id)`; `notifications` on `(recipient_role, is_read, created_at)`.
+
+`audit_logs` is append-only on purpose: the web UI has no edit or delete for it.
 
 See `docs/data-contract.md` for the allergen format and matching rule.

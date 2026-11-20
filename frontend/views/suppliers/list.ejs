@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <h1><%= t('Suppliers') %></h1>
+  <% if (canWrite) { %><a class="btn btn-primary" href="/suppliers/new"><%- icon('plus') %><%= t('Add supplier') %></a><% } %>
+</div>
+
+<div class="table-wrap">
+<table class="table">
+  <thead>
+    <tr><th><%= t('Name') %></th><th><%= t('Phone') %></th><th><%= t('Address') %></th><th class="num"><%= t('Lots') %></th><th><%= t('Status') %></th><% if (canWrite) { %><th class="actions-col"><%= t('Actions') %></th><% } %></tr>
+  </thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="6" class="empty"><%= t('No suppliers yet.') %></td></tr><% } %>
+    <% rows.forEach(function (s) { %>
+      <tr class="<%= s.is_active ? '' : 'row-inactive' %>">
+        <td><%= s.name %></td>
+        <td><%= s.phone || '' %></td>
+        <td><%= s.address || '' %></td>
+        <td class="num"><%= s.lot_count %></td>
+        <td><span class="tag <%= s.is_active ? 'tag-ok' : '' %>"><%= t(s.is_active ? 'Active' : 'Inactive') %></span></td>
+        <% if (canWrite) { %>
+          <td class="actions">
+            <a class="btn btn-small" href="/suppliers/<%= s.supplier_id %>/edit"><%= t('Edit') %></a>
+            <form method="post" action="/suppliers/<%= s.supplier_id %>/delete" onsubmit="return confirm('<%= t('Delete this supplier? If it has delivered lots it is deactivated instead.') %>');">
+              <button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button>
+            </form>
+          </td>
+        <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

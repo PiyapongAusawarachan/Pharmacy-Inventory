@@ -1,0 +1,85 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div>
+    <h1><%= t('Sale') %> #<%= sale.sale_id %>
+      <% if (sale.status === 'COMPLETED') { %><span class="tag tag-ok"><%- icon('check') %><%= t('COMPLETED') %></span><% } else { %><span class="tag tag-dark"><%- icon('x') %><%= t('CANCELLED') %></span><% } %>
+    </h1>
+    <p><%= fmtDateTime(sale.sale_datetime) %> · <%= t('Sold by') %> <%= sale.staff_name %></p>
+  </div>
+  <div class="head-actions">
+    <button class="btn" type="button" onclick="window.print()"><%= t('Print') %></button>
+    <a class="btn" href="/sales"><%= t('Sales history') %></a>
+    <% if (canWrite && sale.status === 'COMPLETED') { %>
+      <form method="post" action="/sales/<%= sale.sale_id %>/cancel" onsubmit="return confirm('<%= t('Cancel this bill? Every item goes back to the lot it came from.') %>');">
+        <button class="btn btn-danger" type="submit"><%= t('Cancel bill') %></button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<% if (sale.status === 'CANCELLED') { %>
+  <div class="flash flash-info"><%- icon('alert') %><div><%= t('Cancelled on {0} by {1}. The stock was returned to the original lots.', fmtDateTime(sale.cancelled_at), sale.cancelled_by_name) %></div></div>
+<% } %>
+<% if (sale.override_reason) { %>
+  <div class="stop caution"><h2><%- icon('alert') %><%= t('Sold despite an allergy warning') %></h2><%= t('Reason given by the pharmacist') %>: <%= sale.override_reason %></div>
+<% } %>
+
+<div class="cols">
+  <div class="main">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Items, by lot deducted') %></h2></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th><%= t('Expiry') %></th><th class="num"><%= t('Quantity') %></th><th class="num"><%= t('Price / unit') %></th><th class="num"><%= t('Total') %></th></tr></thead>
+          <tbody>
+            <% items.forEach(function (i) { %>
+              <tr>
+                <td><strong><%= i.generic_name %></strong> <%= i.strength %><% if (i.requires_khy11) { %> <span class="tag tag-line">ข.ย.11</span><% } %>
+                  <br><span class="muted small"><%= i.dosage_form %><%= i.brand_name ? ' · ' + i.brand_name : '' %></span></td>
+                <td class="mono nowrap"><%= i.lot_number %></td>
+                <td class="nowrap"><%= fmtDate(i.expiry_date) %></td>
+                <td class="num nowrap"><%= i.quantity %> <%= i.base_unit %></td>
+                <td class="num">฿<%= money(i.unit_price) %></td>
+                <td class="num">฿<%= money(i.line_total) %></td>
+              </tr>
+            <% }) %>
+            <tr><td colspan="5" class="num"><strong><%= t('Total') %></strong></td><td class="num"><strong>฿<%= money(sale.total_amount) %></strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('What to tell the customer') %></h2></div>
+      <div class="card-body">
+        <% const seen = {}; items.forEach(function (i) { if (seen[i.medicine_id]) return; seen[i.medicine_id] = true; %>
+          <p><strong><%= i.generic_name %> <%= i.strength %></strong>
+            <% if (i.indication) { %><br><%= t('Used for') %>: <%= i.indication %><% } %>
+            <% if (i.max_daily_dose) { %><br><%= t('Maximum adult dose per day') %>: <%= i.max_daily_dose %><% } %>
+            <% if (i.warnings) { %><br><span class="muted"><%= t('Warnings') %>: <%= i.warnings %></span><% } %>
+          </p>
+        <% }) %>
+        <p class="muted small"><%= t('Demo reference text for a course project, not clinical advice.') %></p>
+      </div>
+    </section>
+  </div>
+
+  <div class="aside">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Customer') %></h2></div>
+      <div class="card-body">
+        <dl class="facts">
+          <dt><%= t('Name') %></dt><dd><%= sale.customer_name || (patient ? patient.name : '—') %></dd>
+          <dt><%= t('Patient code') %></dt><dd><% if (sale.patient_code) { %><a class="mono" href="/patients/<%= sale.patient_code %>"><%= sale.patient_code %></a><% } else { %>—<% } %></dd>
+        </dl>
+        <% if (patient && patient.allergies.length) { %>
+          <p style="margin-top: 12px"><%= t('Allergies on record') %>:</p>
+          <div class="tags"><% patient.allergies.forEach(function (a) { %><span class="tag tag-bad"><%- icon('alert') %><%= a.allergen.display %></span><% }) %></div>
+        <% } %>
+      </div>
+    </section>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

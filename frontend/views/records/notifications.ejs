@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Notifications') %></h1><p><%= t('Messages for you or your role. Stored in MongoDB.') %></p></div>
+</div>
+
+<% if (canWrite) { %>
+<form class="card card-body inline-form" method="post" action="/notifications">
+  <label style="flex: 4 1 320px"><%= t('Message to staff') %>
+    <input type="text" name="message" maxlength="500" required>
+  </label>
+  <label><%= t('Send to') %>
+    <select name="recipient_role"><% STAFF_ROLES.forEach(function (r) { %><option value="<%= r %>" <%= r === 'ASSISTANT' ? 'selected' : '' %>><%= t(r) %></option><% }) %></select>
+  </label>
+  <button class="btn btn-dark" type="submit"><%= t('Send') %></button>
+</form>
+<% } %>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th><%= t('Message') %></th><th><%= t('Received') %></th><th><%= t('Status') %></th><th class="actions-col"><%= t('Actions') %></th></tr></thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="4" class="empty"><%= t('You are all caught up.') %></td></tr><% } %>
+    <% rows.forEach(function (n) { %>
+      <tr class="<%= n.is_read ? 'row-inactive' : '' %>">
+        <td><%= n.is_read ? '' : '● ' %><%= n.message %></td>
+        <td class="nowrap muted small"><%= fmtDateTime(n.created_at) %></td>
+        <td><span class="tag <%= n.is_read ? '' : 'tag-warn' %>"><%= t(n.is_read ? 'Read' : 'Unread') %></span></td>
+        <td class="actions">
+          <form method="post" action="/notifications/<%= n._id %>/read"><input type="hidden" name="is_read" value="<%= n.is_read ? 'false' : 'true' %>"><button class="btn btn-small" type="submit"><%= t(n.is_read ? 'Mark unread' : 'Mark read') %></button></form>
+          <form method="post" action="/notifications/<%= n._id %>/delete"><button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button></form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

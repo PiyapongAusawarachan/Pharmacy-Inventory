@@ -1,0 +1,121 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= p.name %> <span class="mono muted"><%= p.patient_code %></span></h1><p><%= p.phone || t('No phone on record') %></p></div>
+  <div class="head-actions">
+    <a class="btn btn-primary" href="/sales/new?patient=<%= p.patient_code %>"><%- icon('plus') %><%= t('New sale') %></a>
+    <% if (canWrite) { %>
+      <a class="btn" href="/patients/<%= p.patient_code %>/edit"><%= t('Edit') %></a>
+      <form method="post" action="/patients/<%= p.patient_code %>/delete" onsubmit="return confirm('<%= t('Delete this patient profile? Profiles with sales on record cannot be deleted.') %>');">
+        <button class="btn btn-danger" type="submit"><%= t('Delete') %></button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="cols">
+  <div class="main">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Drug allergies') %></h2></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th><%= t('Reacts to') %></th><th><%= t('Type') %></th><th><%= t('Risk') %></th><th><%= t('Reaction') %></th><th><%= t('Recorded') %></th><th></th></tr></thead>
+          <tbody>
+            <% if (!p.allergies.length) { %><tr><td colspan="6" class="empty"><%= t('No drug allergies on record') %></td></tr><% } %>
+            <% p.allergies.forEach(function (a, i) { %>
+              <tr class="<%= a.verification_status === 'REFUTED' ? 'row-inactive' : '' %>">
+                <td><strong><%= a.allergen.display %></strong><br><span class="muted small"><%= t(a.allergen.level === 'CLASS' ? 'Whole drug class' : 'One ingredient') %></span></td>
+                <td><%= t(a.type) %><br><span class="muted small"><%= t(a.verification_status || 'UNCONFIRMED') %></span></td>
+                <td><span class="tag <%= a.criticality === 'HIGH' ? 'tag-bad' : '' %>"><%= t('criticality.' + (a.criticality || 'UNABLE_TO_ASSESS')) %></span></td>
+                <td><% (a.reactions || []).forEach(function (r) { %><%= (r.manifestations || []).join(', ') %><% if (r.severity) { %> <span class="tag"><%= t(r.severity) %></span><% } %><% }) %></td>
+                <td class="nowrap muted small"><%= fmtDate(a.recorded_at) %></td>
+                <td class="actions"><% if (canWrite) { %>
+                  <form method="post" action="/patients/<%= p.patient_code %>/allergies/<%= i %>/delete" onsubmit="return confirm('<%= t('Remove this allergy from the record?') %>');">
+                    <button class="btn btn-small btn-danger" type="submit"><%= t('Remove') %></button>
+                  </form><% } %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% if (canWrite) { %>
+      <div class="card-body" style="border-top: 1px solid var(--border)">
+        <form method="post" action="/patients/<%= p.patient_code %>/allergies">
+          <div class="form-row">
+            <label><%= t('Reacts to') %>
+              <select name="allergen" required data-search>
+                <option value=""><%= t('— pick one —') %></option>
+                <optgroup label="<%= t('Whole drug class') %>">
+                  <% Object.keys(DRUG_CLASSES).filter(function (k) { return k !== 'OTHER'; }).forEach(function (k) { %><option value="CLASS:<%= k %>"><%= DRUG_CLASSES[k].label %></option><% }) %>
+                </optgroup>
+                <optgroup label="<%= t('One ingredient') %>">
+                  <% ingredients.forEach(function (n) { %><option value="INGREDIENT:<%= n %>"><%= n %></option><% }) %>
+                </optgroup>
+              </select>
+            </label>
+            <label><%= t('Type') %>
+              <select name="type"><% TYPES.forEach(function (x) { %><option value="<%= x %>"><%= t(x) %></option><% }) %></select>
+            </label>
+            <label><%= t('Risk') %>
+              <select name="criticality"><% CRITICALITY.forEach(function (x) { %><option value="<%= x %>"><%= t('criticality.' + x) %></option><% }) %></select>
+            </label>
+          </div>
+          <div class="form-row">
+            <label><%= t('What happened (comma separated)') %>
+              <input type="text" name="manifestation" maxlength="200" placeholder="<%= t('rash, swollen lips') %>">
+            </label>
+            <label><%= t('Severity') %>
+              <select name="severity"><option value="">—</option><% SEVERITY.forEach(function (x) { %><option value="<%= x %>"><%= t(x) %></option><% }) %></select>
+            </label>
+            <label><%= t('Confirmed?') %>
+              <select name="verification_status"><% VERIFICATION.forEach(function (x) { %><option value="<%= x %>"><%= t(x) %></option><% }) %></select>
+            </label>
+          </div>
+          <button class="btn btn-dark" type="submit"><%= t('Record allergy') %></button>
+        </form>
+      </div>
+      <% } %>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2><%= t('Purchases') %></h2></div>
+      <div class="table-wrap">
+        <table class="table">
+          <tbody>
+            <% if (!sales.length) { %><tr><td class="empty"><%= t('No sales on record for this patient.') %></td></tr><% } %>
+            <% sales.forEach(function (s) { %>
+              <tr class="<%= s.status === 'CANCELLED' ? 'row-inactive' : '' %>">
+                <td><a href="/sales/<%= s.sale_id %>">#<%= s.sale_id %></a></td>
+                <td class="nowrap"><%= fmtDateTime(s.sale_datetime) %></td>
+                <td><%= t(s.status) %></td>
+                <td class="num">฿<%= money(s.total_amount) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="aside">
+    <section class="card">
+      <div class="card-head"><h2><%= t('Notes') %></h2></div>
+      <div class="card-body">
+        <% if (!(p.notes || []).length) { %><p class="muted"><%= t('No notes yet.') %></p><% } %>
+        <% (p.notes || []).forEach(function (n, i) { %>
+          <div style="margin-bottom:12px"><%= n.text %><br><span class="muted small"><%= fmtDateTime(n.ts) %></span>
+            <% if (canWrite) { %><form method="post" action="/patients/<%= p.patient_code %>/notes/<%= i %>/delete" style="display:inline"><button class="btn btn-small" type="submit"><%= t('Delete') %></button></form><% } %>
+          </div>
+        <% }) %>
+        <form method="post" action="/patients/<%= p.patient_code %>/notes">
+          <label><%= t('Add a note') %>
+            <textarea name="text" rows="2" maxlength="1000" required></textarea>
+          </label>
+          <button class="btn" type="submit"><%= t('Save note') %></button>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

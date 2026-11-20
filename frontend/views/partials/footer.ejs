@@ -1,0 +1,11 @@
+<% if (typeof landing === 'undefined' || !landing) { %></div><% } %>
+</main>
+<script src="/js/combo.js" data-ph="<%= t('Type to search') %>" data-none="<%= t('No match') %>"></script>
+<script>
+  // Close an open menu when another opens or when clicking elsewhere.
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('details.drop[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+  });
+</script>
+</body>
+</html>

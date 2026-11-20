@@ -1,6 +1,6 @@
 # SQL ER Diagram (PostgreSQL)
 
-Source of truth: `db/sql/001_schema.sql`. GitHub renders this Mermaid diagram automatically.
+Source of truth: `database/sql/001_schema.sql`. GitHub renders this Mermaid diagram automatically.
 
 ```mermaid
 erDiagram
@@ -44,6 +44,14 @@ erDiagram
         numeric sell_price "per base unit"
         int reorder_level
         varchar image_path "local file"
+        varchar registration_no
+        text indication
+        text side_effects
+        text warnings
+        varchar max_daily_dose
+        varchar storage_note
+        int max_qty_per_sale
+        varchar data_status
         bool is_active
         timestamptz created_at
     }
@@ -68,6 +76,7 @@ erDiagram
         varchar patient_code "-> Mongo patient_notes"
         varchar customer_name
         numeric total_amount
+        text override_reason
         enum status "COMPLETED | CANCELLED"
         timestamptz cancelled_at
         int cancelled_by FK

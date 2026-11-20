@@ -1,0 +1,86 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Stock lots') %></h1><p><%= t('Sorted by expiry date. The first sellable lot of a medicine is sold first (FEFO).') %></p></div>
+  <% if (canWrite) { %><div class="head-actions"><a class="btn btn-primary" href="/lots/new"><%- icon('plus') %><%= t('Receive stock') %></a></div><% } %>
+</div>
+
+<div class="chips">
+  <a class="chip <%= !filters.view && !filters.status ? 'on' : '' %>" href="/lots"><%= t('All') %></a>
+  <a class="chip <%= filters.view === 'near' ? 'on' : '' %>" href="/lots?view=near"><%= t('Expiring within {0} days', NEAR_EXPIRY_DAYS) %></a>
+  <a class="chip <%= filters.view === 'expired' ? 'on' : '' %>" href="/lots?view=expired"><%= t('Already expired') %></a>
+  <a class="chip <%= filters.status === 'QUARANTINED' ? 'on' : '' %>" href="/lots?status=QUARANTINED"><%= t('QUARANTINED') %></a>
+</div>
+
+<form class="filters" method="get" action="/lots">
+  <select name="medicine" data-search aria-label="<%= t('Medicine') %>">
+    <option value=""><%= t('All medicines') %></option>
+    <% medicines.forEach(function (m) { %>
+      <option value="<%= m.medicine_id %>" <%= String(m.medicine_id) === String(filters.medicine) ? 'selected' : '' %>>
+        <%= m.generic_name %> <%= m.strength %><%= m.brand_name ? ' (' + m.brand_name + ')' : '' %>
+      </option>
+    <% }) %>
+  </select>
+  <select name="status" aria-label="<%= t('Status') %>">
+    <option value=""><%= t('Any status') %></option>
+    <% LOT_STATUSES.forEach(function (s) { %>
+      <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= t(s) %></option>
+    <% }) %>
+  </select>
+  <select name="view" aria-label="<%= t('Expiry') %>">
+    <option value=""><%= t('Any expiry') %></option>
+    <option value="near" <%= filters.view === 'near' ? 'selected' : '' %>><%= t('Expiring within {0} days', NEAR_EXPIRY_DAYS) %></option>
+    <option value="expired" <%= filters.view === 'expired' ? 'selected' : '' %>><%= t('Already expired') %></option>
+  </select>
+  <button class="btn" type="submit"><%= t('Filter') %></button>
+  <a class="btn" href="/lots"><%= t('Clear') %></a>
+</form>
+
+<div class="table-wrap">
+<table class="table">
+  <thead>
+    <tr>
+      <th><%= t('Medicine') %></th><th><%= t('Lot no.') %></th><th><%= t('Expiry') %></th><th><%= t('On hand / received') %></th>
+      <th><%= t('Status') %></th><th><%= t('Supplier') %></th><% if (canWrite) { %><th class="actions-col"><%= t('Actions') %></th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="7" class="empty"><%= t('No lots found.') %></td></tr><% } %>
+    <% rows.forEach(function (l) { %>
+      <% const expired = l.days_left <= 0; const near = !expired && l.days_left <= NEAR_EXPIRY_DAYS; const pct = Math.round(100 * l.qty_on_hand / l.qty_received); %>
+      <tr class="<%= l.status !== 'ACTIVE' ? 'row-inactive' : (expired ? 'row-bad' : (near ? 'row-warn' : '')) %>">
+        <td>
+          <strong><%= l.generic_name %></strong> <%= l.strength %>
+          <br><span class="muted small"><%= l.dosage_form %><%= l.brand_name ? ' · ' + l.brand_name : '' %></span>
+        </td>
+        <td class="mono nowrap"><%= l.lot_number %></td>
+        <td class="nowrap">
+          <%= fmtDate(l.expiry_date) %><br>
+          <% if (expired) { %><span class="tag tag-dark"><%- icon('x') %><%= t('Expired {0} day(s) ago', -l.days_left) %></span>
+          <% } else if (near) { %><span class="tag tag-warn"><%- icon('clock') %><%= t('{0} day(s) left', l.days_left) %></span>
+          <% } else { %><span class="muted small"><%= t('{0} day(s) left', l.days_left) %></span><% } %>
+        </td>
+        <td class="nowrap"><strong><%= l.qty_on_hand %></strong> <span class="muted">/ <%= l.qty_received %> <%= l.base_unit %></span>
+          <div class="bar <%= pct <= 20 ? 'low' : '' %>"><i style="width: <%= pct %>%"></i></div></td>
+        <td>
+          <% if (l.status === 'ACTIVE' && expired) { %><span class="tag tag-bad"><%- icon('x') %><%= t('Not sellable') %></span>
+          <% } else if (l.status === 'ACTIVE') { %><span class="tag tag-ok"><%- icon('check') %><%= t('ACTIVE') %></span>
+          <% } else if (l.status === 'QUARANTINED') { %><span class="tag tag-line"><%- icon('lock') %><%= t('QUARANTINED') %></span>
+          <% } else { %><span class="tag tag-bad"><%- icon('x') %><%= t(l.status) %></span><% } %>
+        </td>
+        <td><%= l.supplier_name %></td>
+        <% if (canWrite) { %>
+          <td class="actions">
+            <a class="btn btn-small" href="/lots/<%= l.lot_id %>/edit"><%= t('Edit') %></a>
+            <form method="post" action="/lots/<%= l.lot_id %>/delete" onsubmit="return confirm('<%= t('Delete this lot? Lots with sales history cannot be deleted.') %>');">
+              <button class="btn btn-small btn-danger" type="submit"><%= t('Delete') %></button>
+            </form>
+          </td>
+        <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

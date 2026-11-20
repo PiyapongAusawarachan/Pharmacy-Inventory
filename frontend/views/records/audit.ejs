@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div><h1><%= t('Audit log') %></h1><p><%= t('Every important action, including rolled-back sales. Append-only: entries cannot be edited or deleted.') %></p></div>
+</div>
+
+<div class="chips">
+  <a class="chip <%= !entity ? 'on' : '' %>" href="/audit"><%= t('All') %></a>
+  <% entities.forEach(function (e) { %><a class="chip <%= entity === e ? 'on' : '' %>" href="/audit?entity=<%= e %>"><%= e %></a><% }) %>
+</div>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th><%= t('Time') %></th><th><%= t('Action') %></th><th><%= t('Record') %></th><th><%= t('By') %></th><th><%= t('Details') %></th></tr></thead>
+  <tbody>
+    <% if (!rows.length) { %><tr><td colspan="5" class="empty"><%= t('No activity recorded yet.') %></td></tr><% } %>
+    <% rows.forEach(function (g) { %>
+      <tr>
+        <td class="nowrap muted small"><%= fmtDateTime(g.ts) %></td>
+        <td><span class="tag <%= g.action === 'SALE_ROLLED_BACK' ? 'tag-bad' : (g.action === 'ALLERGY_OVERRIDE' ? 'tag-warn' : (g.action === 'SALE_COMMITTED' ? 'tag-ok' : '')) %>"><%= t(g.action) %></span></td>
+        <td class="nowrap"><%= g.entity %><%= g.entity_id !== null && g.entity_id !== undefined ? ' #' + g.entity_id : '' %></td>
+        <td><%= g.staff_name %></td>
+        <td class="mono small muted" style="word-break: break-word"><%= g.details && Object.keys(g.details).length ? JSON.stringify(g.details) : '' %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>
