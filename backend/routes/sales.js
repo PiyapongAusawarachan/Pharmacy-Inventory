@@ -6,7 +6,7 @@ const { requireRole, flash } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { matchAllergies } = require('../services/allergy');
 const { createSale, cancelSale, SaleError } = require('../services/sale');
-const { checkLowStockAfterSale } = require('../services/alerts');
+const { checkLowStockAfterSale, notify } = require('../services/alerts');
 
 const router = express.Router();
 const RESTRICTED = ['DANGEROUS', 'SPECIAL_CONTROLLED'];
@@ -190,6 +190,15 @@ router.post(
       total: result.total, patient_code: state.patient_code || null,
       lines: result.lines.map((l) => ({ medicine_id: l.medicine_id, lot_id: l.lot_id, lot_number: l.lot_number, quantity: l.quantity })),
     });
+    try {
+      await notify({
+        role: 'PHARMACIST',
+        message: `Sale #${result.sale_id} completed: ฿${result.total.toFixed(2)}`,
+        ref: { type: 'sales', id: result.sale_id },
+      });
+    } catch (err) {
+      console.error('sale notification failed:', err.message);
+    }
     if (matches.length) {
       await audit('ALLERGY_OVERRIDE', 'sales', result.sale_id, user.staff_id, {
         patient_code: state.patient_code, reason: overrideReason,
