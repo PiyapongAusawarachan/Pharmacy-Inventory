@@ -73,8 +73,8 @@ Dotted lines are logical references checked by the application. MongoDB and Post
 |---|---|---|
 | `patient_notes` | Create / edit / delete patient, add / remove allergy, add / delete note; **read before** every sale to check allergies | `/patients` |
 | `stock_alerts` | After a sale commits and stock falls to `reorder_level` or below; when staff press "scan stock now" (expiry and low stock, `NEAR_EXPIRY_DAYS`, default 180); status changed OPEN → ACKNOWLEDGED → RESOLVED; only RESOLVED alerts can be deleted | `/alerts` |
-| `audit_logs` | After every commit **and after every rollback** (`SALE_ROLLED_BACK`), bill cancellation, allergy override, and each create / update / delete of medicines, lots, suppliers, staff, patients | `/audit` (view only) |
-| `notifications` | After commit when an alert is raised or a specially controlled drug is sold; staff can also send a message to a role or a person; recipients mark read or delete | `/notifications` |
+| `audit_logs` | After every commit **and after every rollback** (`SALE_ROLLED_BACK`), bill cancellation, allergy override, and each create / update / delete of medicines, lots, suppliers, staff, patients | `/audit` (view; admin can delete old entries) |
+| `notifications` | After every committed sale (message to the pharmacist) and when an alert is raised; staff can also send a message to a role or a person; recipients mark read or delete | `/notifications` |
 
 Indexes (see `database/mongo/collections.js`): `patient_notes.patient_code` unique; `stock_alerts` on `(status, type)` and `medicine_id`; `audit_logs` on `ts` descending and `(entity, entity_id)`; `notifications` on `(recipient_role, is_read, created_at)`.
 
