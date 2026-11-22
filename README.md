@@ -134,7 +134,6 @@ Stock is always stored in the medicine's **base unit** (for example tablets). Wh
 | `POST /lots/:id/delete` | admin, pharmacist | Delete if never sold |
 | `GET /suppliers`, `/suppliers/new`, `/suppliers/:id/edit` and matching `POST` routes | any role to view; admin, pharmacist to change | Supplier CRUD |
 | `GET /staff`, `/staff/new`, `/staff/:id/edit` and matching `POST` routes | admin | Staff CRUD |
-
 | `GET /sales/new`, `POST /sales` | any role (see rules below) | Sale screen; `POST` runs the FEFO transaction |
 | `GET /sales`, `GET /sales/:id` | any role | Sales history (`?status=`) and one bill with the lots it was deducted from |
 | `POST /sales/:id/cancel` | admin, pharmacist | Cancel a bill: stock goes back to the original lots in one transaction |
