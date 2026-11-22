@@ -17,6 +17,7 @@ const EN = {
   MILD: 'Mild', MODERATE: 'Moderate', SEVERE: 'Severe',
   SALE_COMMITTED: 'Sale saved', SALE_ROLLED_BACK: 'Sale rolled back', SALE_CANCELLED: 'Sale cancelled',
   ALLERGY_OVERRIDE: 'Allergy override', STOCK_SCANNED: 'Stock scanned',
+    AUDIT_PURGED: 'Old entries deleted',
   LOT_CREATED: 'Lot received', LOT_UPDATED: 'Lot updated', LOT_DELETED: 'Lot deleted',
   MEDICINE_CREATED: 'Medicine added', MEDICINE_UPDATED: 'Medicine updated', MEDICINE_DELETED: 'Medicine deleted',
   MEDICINE_DEACTIVATED: 'Medicine deactivated',

@@ -133,8 +133,28 @@ router.get(
     const { rows: staff } = await pool.query('SELECT staff_id, full_name FROM staff');
     const names = new Map(staff.map((s) => [s.staff_id, s.full_name]));
     const rows = logs.map((l) => ({ ...l, staff_name: names.get(l.staff_id) || '' }));
-    const entities = ['sales', 'stock_lots', 'medicines', 'suppliers', 'staff', 'patient_notes', 'stock_alerts'];
+    const entities = ['sales', 'stock_lots', 'medicines', 'suppliers', 'staff', 'patient_notes', 'stock_alerts', 'audit_logs'];
     res.render('records/audit', { title: 'Audit log', rows, entity, entities });
+  })
+);
+
+// Admin only: delete old entries. The purge itself is logged, so it leaves a trace.
+router.post(
+  '/audit/purge',
+  requireRole('ADMIN'),
+  wrap(async (req, res) => {
+    const days = Number(req.body.days);
+    if (!Number.isInteger(days) || days < 1 || days > 3650) {
+      flash(req, 'error', req.t('Enter a number of days between 1 and 3650.'));
+      return res.redirect('/audit');
+    }
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const result = await getDb().collection('audit_logs').deleteMany({ ts: { $lt: cutoff } });
+    await audit('AUDIT_PURGED', 'audit_logs', null, req.session.user.staff_id, {
+      older_than_days: days, deleted: result.deletedCount,
+    });
+    flash(req, 'success', req.t('Deleted {0} old audit entries.', result.deletedCount));
+    res.redirect('/audit');
   })
 );
 

@@ -144,7 +144,8 @@ Stock is always stored in the medicine's **base unit** (for example tablets). Wh
 | `POST /alerts/:id/status`, `POST /alerts/:id/delete` | admin, pharmacist | Acknowledge, resolve, reopen; delete only when resolved |
 | `GET /notifications`, `POST /notifications` | any role to read; admin, pharmacist to send | Messages by role |
 | `POST /notifications/:id/read`, `.../delete` | the recipient | Mark read or unread, delete |
-| `GET /audit` | any role | Audit log (`?entity=`), read-only |
+| `GET /audit` | any role | Audit log (`?entity=`) |
+| `POST /audit/purge` | admin | Delete audit entries older than N days (the purge is logged) |
 | `GET /ledgers` | any role | ข.ย.11 (sales of designated dangerous drugs) and ข.ย.9 (purchases), built from SQL |
 | `GET /lang/th`, `GET /lang/en` | anyone | Switch the UI language (stored in a cookie) |
 
@@ -156,11 +157,11 @@ Stock is always stored in the medicine's **base unit** (for example tablets). Wh
    - if a patient profile is chosen, every medicine is matched against the allergies in MongoDB (rule in `docs/data-contract.md`). An exact ingredient match needs a typed reason from the pharmacist; a same-class match needs a tick-box confirmation. Allergies marked `REFUTED` are ignored.
 2. **One SQL transaction** (`backend/services/sale.js`): insert the sale, lock the medicine's sellable lots with `SELECT ... FOR UPDATE` ordered by expiry date, deduct across lots (one `sale_items` row per lot), update the total. Expired, quarantined and empty lots are never used.
 3. **If any medicine is short**, the code throws, `withTransaction()` runs `ROLLBACK`, and nothing is saved. The failed attempt is written to MongoDB as `SALE_ROLLED_BACK`.
-4. **After `COMMIT`**, MongoDB gets `SALE_COMMITTED` (and `ALLERGY_OVERRIDE` if a warning was overridden), a `LOW_STOCK` alert and a notification if a medicine fell to its reorder level.
+4. **After `COMMIT`**, MongoDB gets `SALE_COMMITTED` (and `ALLERGY_OVERRIDE` if a warning was overridden) and a notification for the pharmacist. If a medicine fell to its reorder level, it also gets a `LOW_STOCK` alert and a notification.
 
 Known limitation: the two databases are not in one distributed transaction. If a MongoDB write fails after the SQL commit, the sale stands and only the log entry is missing (the error is printed on the server).
 
-The audit log is append-only on purpose: the app has no route to edit or delete an entry.
+Audit entries cannot be edited. Only an admin can delete entries older than a chosen number of days, and that deletion is itself logged (`AUDIT_PURGED`).
 
 ### How to show the two transaction cases
 
