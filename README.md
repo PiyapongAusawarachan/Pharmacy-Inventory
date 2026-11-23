@@ -212,3 +212,7 @@ The medicine list is hand-written demo data, **not** an import of Thai Medicines
 ## Screenshots
 
 See [`docs/screenshots/`](docs/screenshots/).
+
+## Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/DLxjnou-2Mc/0.jpg)](https://youtu.be/DLxjnou-2Mc)
