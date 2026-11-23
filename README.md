@@ -211,4 +211,4 @@ The medicine list is hand-written demo data, **not** an import of Thai Medicines
 
 ## Screenshots
 
-See [`uploads/`](uploads/).
+See [`docs/screenshots/`](docs/screenshots/).
