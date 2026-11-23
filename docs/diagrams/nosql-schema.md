@@ -78,6 +78,6 @@ Dotted lines are logical references checked by the application. MongoDB and Post
 
 Indexes (see `database/mongo/collections.js`): `patient_notes.patient_code` unique; `stock_alerts` on `(status, type)` and `medicine_id`; `audit_logs` on `ts` descending and `(entity, entity_id)`; `notifications` on `(recipient_role, is_read, created_at)`.
 
-`audit_logs` is append-only on purpose: the web UI has no edit or delete for it.
+`audit_logs` entries cannot be edited. Only an admin can delete entries older than a chosen number of days, and that deletion is itself logged (`AUDIT_PURGED`).
 
 See `docs/data-contract.md` for the allergen format and matching rule.
